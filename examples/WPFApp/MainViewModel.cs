@@ -6,6 +6,15 @@ namespace WPFApp
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+        private readonly IFbClient _fbClient;
+
+        public MainViewModel(IFbClient fbClient)
+        {
+            _fbClient = fbClient;
+
+            MyCommand = new RelayCommand(ExecuteMyCommand, CanExecuteMyCommand);
+        }
+
         #region Implement INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
@@ -27,24 +36,17 @@ namespace WPFApp
         }
         #endregion
 
+        #region Commands
+        // MyCommand
         public ICommand MyCommand { get; }
-        IFbClient _fbClient;
-
-        public MainViewModel(IFbClient fbClient)
-        {
-            _fbClient = fbClient;
-
-            MyCommand = new RelayCommand(ExecuteMyCommand, CanExecuteMyCommand);
-        }
-
         private bool CanExecuteMyCommand()
         {
-            // Logic to determine if command can execute
-            return true; // For simplicity, always true here
+            return true;
         }
         private void ExecuteMyCommand()
         {
             SomeProperty = $"Random Generate Guid {Guid.NewGuid().ToString()}";
         }
+        #endregion
     }
 }

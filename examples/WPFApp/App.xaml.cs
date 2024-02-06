@@ -26,16 +26,14 @@ namespace WPFApp
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IFbClient, FbClient>();
-            // Register other services and view models
-            services.AddTransient<MainViewModel>(); // ViewModel
+            services.AddTransient<MainViewModel>();
             services.AddTransient<MainWindow>();
-            //services.AddTransient<MainWindow>(provider =>
-            //    new MainWindow(provider.GetRequiredService<MainViewModel>()));
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
             var mainWindow = _serviceProvider.GetService<MainWindow>();
             mainWindow.Show();
         }
