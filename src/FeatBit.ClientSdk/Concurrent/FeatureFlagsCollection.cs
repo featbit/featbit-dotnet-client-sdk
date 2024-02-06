@@ -1,13 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace FeatBit.ClientSdk.Concurrent
 {
-    public class FeatureFlagsCollection<String, FeatureFlag>
+    public class FeatureFlagsCollection
     {
-        private static FeatureFlagsCollection<String, FeatureFlag> _instance;
+        private static FeatureFlagsCollection _instance;
         private static readonly object _lock = new object();
 
         public ConcurrentDictionary<String, FeatureFlag> _dictionary;
@@ -19,7 +21,7 @@ namespace FeatBit.ClientSdk.Concurrent
         }
 
         // Public static method to get the instance of the class
-        public static FeatureFlagsCollection<String, FeatureFlag> Instance
+        public static FeatureFlagsCollection Instance
         {
             get
             {
@@ -29,7 +31,7 @@ namespace FeatBit.ClientSdk.Concurrent
                     {
                         if (_instance == null)
                         {
-                            _instance = new FeatureFlagsCollection<String, FeatureFlag>();
+                            _instance = new FeatureFlagsCollection();
                         }
                     }
                 }
@@ -39,6 +41,14 @@ namespace FeatBit.ClientSdk.Concurrent
 
         // Instance methods follow...
 
+        public void InitOrUpdateCollection(List<FeatureFlag> featureFlags)
+        {
+            foreach(var item in featureFlags)
+            {
+                _dictionary.AddOrUpdate(item.Id, item, (existingKey, existingValue) => item);
+            }
+        }
+        
         public bool AddOrUpdate(String key, FeatureFlag value)
         {
             return _dictionary.AddOrUpdate(key, value, (existingKey, existingValue) => value) != null;
@@ -52,6 +62,11 @@ namespace FeatBit.ClientSdk.Concurrent
         public bool TryRemove(String key)
         {
             return _dictionary.TryRemove(key, out _);
+        }
+
+        public List<FeatureFlag> GetAllLatestFeatureFlags()
+        {
+            return _dictionary.Values.ToList();
         }
 
         public void Clear()
