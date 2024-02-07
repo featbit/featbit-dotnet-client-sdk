@@ -1,64 +1,70 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace FeatBit.ClientSdk.Models
 {
     public class FbIdentity
     {
-        public readonly string Key;
+        private string _keyId;
+        [JsonProperty("keyId")]
+        public string Key { get { return _keyId; } }
         private string _name;
+        [JsonProperty("name")]
         public string Name { get {  return _name; } }
-        public readonly Dictionary<string, string> Custom;
+        private readonly Dictionary<string, string> _custom;
+        [JsonProperty("customizedProperties")]
+        public Dictionary<string, string> Custom { get { return _custom; } }
 
         public FbIdentity()
         {
-            Key = Guid.NewGuid().ToString();
+            _keyId = Guid.NewGuid().ToString();
             _name = Key;
-            Custom = new Dictionary<string, string>();
+            _custom = new Dictionary<string, string>();
         }
 
         public FbIdentity(string key)
         {
-            Key = key;
+            _keyId = key;
             _name = key;
-            Custom = new Dictionary<string, string>();
+            _custom = new Dictionary<string, string>();
         }
 
         public FbIdentity(string key, string name)
         {
-            Key = key;
+            _keyId = key;
             _name = name;
-            Custom = new Dictionary<string, string>();
+            _custom = new Dictionary<string, string>();
         }
 
         public FbIdentity(string key, string name, Dictionary<string, string> custom)
         {
-            Key = key;
+            _keyId = key;
             _name = name;
-            Custom = custom;
+            _custom = custom;
         }
 
         public void AddProperty(string key, string value)
         {
-            if (Custom.ContainsKey(key))
+            if (_custom.ContainsKey(key))
             {
-                Custom[key] = value;
+                _custom[key] = value;
             }
             else
             {
-                Custom.Add(key, value);
+                _custom.Add(key, value);
             }
         }
 
         public void UpdateProperty(string key, string value)
         {
-            if (Custom.ContainsKey(key))
+            if (_custom.ContainsKey(key))
             {
-                Custom[key] = value;
+                _custom[key] = value;
             }
             else
             {
-                Custom.Add(key, value);
+                _custom.Add(key, value);
             }
         }
 
@@ -84,7 +90,7 @@ namespace FeatBit.ClientSdk.Models
                 return Name;
             }
 
-            return Custom.TryGetValue(property, out var value) ? value : string.Empty;
+            return _custom.TryGetValue(property, out var value) ? value : string.Empty;
         }
     }
 }

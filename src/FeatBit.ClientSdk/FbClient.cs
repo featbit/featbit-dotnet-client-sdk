@@ -8,16 +8,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Headers;
+using System.Net.Mime;
+using System.Linq;
 
 namespace FeatBit.ClientSdk
 {
     public class FbClient : IFbClient
     {
         public bool Initialized => throw new NotImplementedException();
-        private string _remoteServerUrl = "";
-        private int _pollingInterval = 30000;
         private readonly FbOptions _options;
         private readonly ILogger _logger;
+        private FbIdentity _identity;
 
         public FbClient(FbOptions options)
         {
@@ -29,23 +31,30 @@ namespace FeatBit.ClientSdk
         {
         }
 
-        #region initialization methods
-        public void Init(string remoteServerUrl, bool enablePooling = false, int poolingInterval = 30000)
+        public void Identify(FbIdentity identity)
         {
-            _remoteServerUrl = remoteServerUrl;
-            if (enablePooling == true)
-                _pollingInterval = poolingInterval;
+            _identity = identity;
         }
 
-        public async Task InitAsync(string remoteServerUrl, bool enablePooling = false, int poolingInterval = 30000)
+        #region initialization methods
+        public void LoadLatestCollectionFromRemoteServer()
         {
-            this.Init(remoteServerUrl, enablePooling, poolingInterval);
+        }
+
+        public async Task LoadLatestCollectionFromRemoteServerAsync()
+        {
             LoadLatestCollection(await RetriveFeatureFlagsFromServerByHttpAPIAsync());
         }
 
         public void LoadLatestCollection(List<FeatureFlag> featureFlags)
         {
             FeatureFlagsCollection.Instance.InitOrUpdateCollection(featureFlags);
+        }
+
+        public async Task LoadLocalCollectionAsync(Func<Task<List<FeatureFlag>>> loadActionAsync)
+        {
+            var featureFlags = await loadActionAsync();
+            LoadLatestCollection(featureFlags);
         }
 
         public void SaveToLocal(Action<List<FeatureFlag>> action)
@@ -55,26 +64,22 @@ namespace FeatBit.ClientSdk
 
         private async Task<List<FeatureFlag>> RetriveFeatureFlagsFromServerByHttpAPIAsync()
         {
-            var url = $"{_remoteServerUrl}/api/public/sdk/client/latest-all";
-            var keyId = "bot-id";
-            var name = "bot";
+            var url = $"{_options.EventUri}api/public/sdk/client/latest-all";
             var requestBody = new
             {
-                keyId = keyId,
-                name = name,
-                customizedProperties = new[]
-                {
-                    new { name = "level", value = "high" },
-                    new { name = "localtion", value = "us" }
-                }
+                keyId = _identity.Key,
+                name = _identity.Name,
+                customizedProperties = _identity.Custom.ToArray()
             };
 
             using (var httpClient = new HttpClient())
             {
-                httpClient.DefaultRequestHeaders.Add("Authorization", "RQrHZX7ClUmjS56c5aq_Mw3zSJhPUPg0mRr59x9t_NSg");
-                httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
+                httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+                var contentStr = JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(contentStr, Encoding.UTF8, "application/json");
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 var response = await httpClient.PostAsync(url, content);
 
