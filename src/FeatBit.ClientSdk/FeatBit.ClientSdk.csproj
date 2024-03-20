@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <Nullable>enable</Nullable>
+	  <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net6.0;net8.0</TargetFrameworks>
+	  <NoWarn>1591;</NoWarn>
+	  <LangVersion>10</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
