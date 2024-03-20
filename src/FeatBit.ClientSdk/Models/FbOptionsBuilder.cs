@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace FeatBit.ClientSdk.Models
+namespace FeatBit.ClientSdk
 {
     public class FbOptionsBuilder
     {
@@ -15,6 +14,7 @@ namespace FeatBit.ClientSdk.Models
 
         private Uri _streamingUri;
         private Uri _eventUri;
+        private Uri _apiUri;
 
         private TimeSpan _connectTimeout;
         private TimeSpan _closeTimeout;
@@ -45,6 +45,7 @@ namespace FeatBit.ClientSdk.Models
             // uris
             _streamingUri = new Uri("ws://localhost:5100");
             _eventUri = new Uri("http://localhost:5100");
+            _apiUri = new Uri("http://localhost:5000");
 
             // websocket configs
             _connectTimeout = TimeSpan.FromSeconds(3);
@@ -95,6 +96,11 @@ namespace FeatBit.ClientSdk.Models
             return this;
         }
 
+        public FbOptionsBuilder APIs(Uri uri)
+        {
+            _apiUri = uri;
+            return this;
+        }
         public FbOptionsBuilder Event(Uri uri)
         {
             _eventUri = uri;

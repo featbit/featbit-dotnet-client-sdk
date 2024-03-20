@@ -5,13 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+ 
+        >
+    <!--Loaded="{Binding MainWindowLoadedCommand}"-->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
         <TextBox Grid.Row="0" Text="{Binding SomeProperty}" />
-        <Button Grid.Row="1" Height="30" Command="{Binding MyCommand}" Content="Click Me" />
+        <Button Grid.Row="1" Height="30" Click="Button_Refresh_Click" Content="Refresh FeatBit feature flags" />
+        <Grid Grid.Row="2">
+            <TextBlock x:Name="TextBox_Thanks" Text="Thanks for using FeatBit" />
+        </Grid>
     </Grid>
 </Window>

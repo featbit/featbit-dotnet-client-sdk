@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FeatBit.ClientSdk.Models
+namespace FeatBit.ClientSdk
 {
     public sealed class FbOptions
     {

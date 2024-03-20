@@ -1,5 +1,6 @@
 ﻿using FeatBit.ClientSdk;
 using System.ComponentModel;
+using System.Net;
 using System.Windows.Input;
 
 namespace WPFApp
@@ -22,7 +23,7 @@ namespace WPFApp
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
-        
+
         #region Properties
         private string _someProperty;
         public string SomeProperty
@@ -45,6 +46,7 @@ namespace WPFApp
         }
         private void ExecuteMyCommand()
         {
+            Task.Run(async () => await _fbClient.LoadLatestCollectionFromRemoteServerAsync()).Wait();
             SomeProperty = $"Random Generate Guid {Guid.NewGuid().ToString()}";
         }
         #endregion

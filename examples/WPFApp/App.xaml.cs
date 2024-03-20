@@ -1,11 +1,7 @@
-﻿using Autofac.Features.ResolveAnything;
-using Autofac;
-using System.Configuration;
-using System.Data;
-using System.Windows;
-using FeatBit.ClientSdk;
-using Autofac.Core;
+﻿using FeatBit.ClientSdk;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Windows;
 
 namespace WPFApp
 {
@@ -25,17 +21,31 @@ namespace WPFApp
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IFbClient, FbClient>();
+            var consoleLoggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole();
+            });
+            var options = new FbOptionsBuilder("*****")
+                                .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+                                .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
+                                .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+                                .LoggerFactory(consoleLoggerFactory)
+                                .Build();
+            services.AddSingleton<IFbClient>(provider => new FbClient(options));
             services.AddTransient<MainViewModel>();
             services.AddTransient<MainWindow>();
+            services.AddTransient<LoginWindow>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            var mainWindow = _serviceProvider.GetService<MainWindow>();
-            mainWindow.Show();
+            //var mainWindow = _serviceProvider.GetService<MainWindow>();
+            //mainWindow.Show();
+
+            var loginWindow = _serviceProvider.GetService<LoginWindow>();
+            loginWindow.Show();
         }
     }
 

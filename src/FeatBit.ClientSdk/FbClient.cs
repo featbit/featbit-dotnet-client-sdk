@@ -1,16 +1,14 @@
 ﻿using FeatBit.ClientSdk.Concurrent;
-using FeatBit.ClientSdk.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace FeatBit.ClientSdk
 {
@@ -27,13 +25,14 @@ namespace FeatBit.ClientSdk
             _logger = options.LoggerFactory.CreateLogger<FbClient>();
         }
 
-        public FbClient()
-        {
-        }
-
         public void Identify(FbIdentity identity)
         {
             _identity = identity;
+        }
+
+        public void Logout()
+        {
+            _identity = null;
         }
 
         #region initialization methods
@@ -55,6 +54,11 @@ namespace FeatBit.ClientSdk
         {
             var featureFlags = await loadActionAsync();
             LoadLatestCollection(featureFlags);
+        }
+
+        public List<FeatureFlag> GetAllFeatures()
+        {
+            throw new NotImplementedException();
         }
 
         public void SaveToLocal(Action<List<FeatureFlag>> action)
@@ -81,17 +85,25 @@ namespace FeatBit.ClientSdk
                 var content = new StringContent(contentStr, Encoding.UTF8, "application/json");
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-                var response = await httpClient.PostAsync(url, content);
+                try
+                {
+                    var response = await httpClient.PostAsync(url, content);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Response received successfully:");
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<FeatureFlag>>(responseContent) ?? new List<FeatureFlag>();
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine("Response received successfully:");
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        return JsonSerializer.Deserialize<List<FeatureFlag>>(responseContent) ?? new List<FeatureFlag>();
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to retrieve feature flags from server");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    throw new Exception("Failed to retrieve feature flags from server");
+                    _logger.LogError(ex, "Failed to retrieve feature flags from server");
+                    throw;
                 }
             }
         }
@@ -280,5 +292,6 @@ namespace FeatBit.ClientSdk
         {
             throw new NotImplementedException();
         }
+
     }
 }

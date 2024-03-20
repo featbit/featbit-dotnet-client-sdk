@@ -18,12 +18,43 @@ namespace WPFApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        IFbClient _fbClient;
-        public MainWindow(MainViewModel viewModel, IFbClient fbClient)
+        private readonly IFbClient _fbClient;
+        public MainWindow(
+            IFbClient fbClient, 
+            MainViewModel viewModel)
         {
             InitializeComponent();
-            this.DataContext = viewModel;
             _fbClient = fbClient;
+            Loaded += MainWindow_Loaded;
+            //this.DataContext = viewModel;    
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetVisibility();
+        }
+
+        private void Button_Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            Task.Run(async () => await _fbClient.LoadLatestCollectionFromRemoteServerAsync()).Wait();
+            SetVisibility();
+        }
+
+        private void SetVisibility()
+        {
+            var visibleStatus = _fbClient.StringVariation("testing-visibility", "Collapsed");
+            switch (visibleStatus)
+            {
+                case "Visible":
+                    TextBox_Thanks.Visibility = Visibility.Visible;
+                    break;
+                case "Collapsed":
+                    TextBox_Thanks.Visibility = Visibility.Collapsed;
+                    break;
+                default:
+                    TextBox_Thanks.Visibility = Visibility.Visible;
+                    break;
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using FeatBit.ClientSdk.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,10 +12,13 @@ namespace FeatBit.ClientSdk
         /// <value>true if the client is ready</value>
         bool Initialized { get; }
         void Identify(FbIdentity identity);
+        void Logout();
         void LoadLatestCollectionFromRemoteServer();
         Task LoadLatestCollectionFromRemoteServerAsync();
         void LoadLatestCollection(List<FeatureFlag> featureFlags);
         Task LoadLocalCollectionAsync(Func<Task<List<FeatureFlag>>> loadActionAsync);
+        List<FeatureFlag> GetAllFeatures();
+        void SaveToLocal(Action<List<FeatureFlag>> action);
         bool BoolVariation(string key, bool defaultValue = false);
         int IntVariation(string key, int defaultValue = 0);
         float FloatVariation(string key, float defaultValue = 0);
