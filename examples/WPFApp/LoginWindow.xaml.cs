@@ -1,4 +1,5 @@
 ﻿using FeatBit.ClientSdk;
+using FeatBit.ClientSdk.Singletons;
 using System.Windows;
 
 namespace WPFApp

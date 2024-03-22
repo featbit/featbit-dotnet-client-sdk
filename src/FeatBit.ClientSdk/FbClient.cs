@@ -1,4 +1,5 @@
 ﻿using FeatBit.ClientSdk.Concurrent;
+using FeatBit.ClientSdk.Singletons;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,16 +19,25 @@ namespace FeatBit.ClientSdk
         private readonly FbOptions _options;
         private readonly ILogger _logger;
         private FbIdentity _identity;
+        private readonly FeatureFlagsCollection _featureFlagsCollection;
+        internal readonly IDataSynchronizer _dataSynchronizer;
 
         public FbClient(FbOptions options)
         {
             _options = options;
             _logger = options.LoggerFactory.CreateLogger<FbClient>();
+            _featureFlagsCollection = FeatureFlagsCollection.Instance;
+            _dataSynchronizer = new PollingDataSynchronizer(options);
         }
 
         public void Identify(FbIdentity identity)
         {
             _identity = identity;
+        }
+
+        public Task<bool> StartAsync()
+        {
+            _dataSynchronizer.StartAsync();
         }
 
         public void Logout()
@@ -47,7 +57,7 @@ namespace FeatBit.ClientSdk
 
         public void LoadLatestCollection(List<FeatureFlag> featureFlags)
         {
-            FeatureFlagsCollection.Instance.InitOrUpdateCollection(featureFlags);
+            _featureFlagsCollection.InitOrUpdateCollection(featureFlags);
         }
 
         public async Task LoadLocalCollectionAsync(Func<Task<List<FeatureFlag>>> loadActionAsync)
@@ -63,7 +73,7 @@ namespace FeatBit.ClientSdk
 
         public void SaveToLocal(Action<List<FeatureFlag>> action)
         {
-            action(FeatureFlagsCollection.Instance.GetAllLatestFeatureFlags());
+            action(_featureFlagsCollection.GetAllLatestFeatureFlags());
         }
 
         private async Task<List<FeatureFlag>> RetriveFeatureFlagsFromServerByHttpAPIAsync()
@@ -114,7 +124,7 @@ namespace FeatBit.ClientSdk
         public bool BoolVariation(string key, bool defaultValue = false)
         {
             FeatureFlag ff = new FeatureFlag();
-            if (FeatureFlagsCollection.Instance.TryGetValue(key, out ff) == true)
+            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
                 if(ff.VariationType.ToLower() == "boolean")
                 {
@@ -127,7 +137,7 @@ namespace FeatBit.ClientSdk
             }
             else
             {
-                FeatureFlagsCollection.Instance.AddOrUpdate(key, new FeatureFlag
+                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
                 {
                     Id = key,
                     Variation = defaultValue.ToString().ToLower(),
@@ -140,7 +150,7 @@ namespace FeatBit.ClientSdk
         public double DoubleVariation(string key, double defaultValue = 0)
         {
             FeatureFlag ff = new FeatureFlag();
-            if (FeatureFlagsCollection.Instance.TryGetValue(key, out ff) == true)
+            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
                 if (ff.VariationType.ToLower() == "number")
                 {
@@ -153,7 +163,7 @@ namespace FeatBit.ClientSdk
             }
             else
             {
-                FeatureFlagsCollection.Instance.AddOrUpdate(key, new FeatureFlag
+                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
                 {
                     Id = key,
                     Variation = defaultValue.ToString().ToLower(),
@@ -166,7 +176,7 @@ namespace FeatBit.ClientSdk
         public float FloatVariation(string key, float defaultValue = 0)
         {
             FeatureFlag ff = new FeatureFlag();
-            if (FeatureFlagsCollection.Instance.TryGetValue(key, out ff) == true)
+            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
                 if (ff.VariationType.ToLower() == "number")
                 {
@@ -179,7 +189,7 @@ namespace FeatBit.ClientSdk
             }
             else
             {
-                FeatureFlagsCollection.Instance.AddOrUpdate(key, new FeatureFlag
+                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
                 {
                     Id = key,
                     Variation = defaultValue.ToString().ToLower(),
@@ -192,7 +202,7 @@ namespace FeatBit.ClientSdk
         public T ObjectVariation<T>(string key, T defaultValue = default)
         {
             FeatureFlag ff = new FeatureFlag();
-            if (FeatureFlagsCollection.Instance.TryGetValue(key, out ff) == true)
+            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
                 if (ff.VariationType.ToLower() == "string")
                 {
@@ -205,7 +215,7 @@ namespace FeatBit.ClientSdk
             }
             else
             {
-                FeatureFlagsCollection.Instance.AddOrUpdate(key, new FeatureFlag
+                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
                 {
                     Id = key,
                     Variation = JsonSerializer.Serialize(defaultValue),
@@ -218,7 +228,7 @@ namespace FeatBit.ClientSdk
         public int IntVariation(string key, int defaultValue = 0)
         {
             FeatureFlag ff = new FeatureFlag();
-            if (FeatureFlagsCollection.Instance.TryGetValue(key, out ff) == true)
+            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
                 if (ff.VariationType.ToLower() == "number")
                 {
@@ -231,7 +241,7 @@ namespace FeatBit.ClientSdk
             }
             else
             {
-                FeatureFlagsCollection.Instance.AddOrUpdate(key, new FeatureFlag
+                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
                 {
                     Id = key,
                     Variation = defaultValue.ToString().ToLower(),
@@ -244,7 +254,7 @@ namespace FeatBit.ClientSdk
         public string StringVariation(string key, string defaultValue = "")
         {
             FeatureFlag ff = new FeatureFlag();
-            if (FeatureFlagsCollection.Instance.TryGetValue(key, out ff) == true)
+            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
                 if (ff.VariationType.ToLower() == "string")
                 {
@@ -257,7 +267,7 @@ namespace FeatBit.ClientSdk
             }
             else
             {
-                FeatureFlagsCollection.Instance.AddOrUpdate(key, new FeatureFlag
+                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
                 {
                     Id = key,
                     Variation = defaultValue.ToString(),
@@ -288,9 +298,12 @@ namespace FeatBit.ClientSdk
         {
             throw new NotImplementedException();
         }
-        public Task CloseAsync()
+        public async Task CloseAsync()
         {
-            throw new NotImplementedException();
+            _logger.LogInformation("Closing FbClient...");
+            await _dataSynchronizer.StopAsync();
+            _eventProcessor.FlushAndClose(_options.FlushTimeout);
+            _logger.LogInformation("FbClient successfully closed.");
         }
 
     }

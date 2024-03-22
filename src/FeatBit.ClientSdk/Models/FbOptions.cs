@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FeatBit.ClientSdk.Enums;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -113,6 +114,10 @@ namespace FeatBit.ClientSdk
         /// <value>Defaults to <see cref="NullLoggerFactory.Instance"/></value>
         public ILoggerFactory LoggerFactory { get; set; }
 
+        public DataSyncMethodEnum DataSyncMethod { get; set; }
+
+        public int PoollingInterval { get; set; }
+
         internal FbOptions(
             TimeSpan startWaitTime,
             bool offline,
@@ -130,7 +135,9 @@ namespace FeatBit.ClientSdk
             int maxEventPerRequest,
             int maxSendEventAttempts,
             TimeSpan sendEventRetryInterval,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            DataSyncMethodEnum dataSyncMethod = DataSyncMethodEnum.Polling,
+            int pollingInterval = 10000)
         {
             StartWaitTime = startWaitTime;
             Offline = offline;
@@ -151,6 +158,9 @@ namespace FeatBit.ClientSdk
             MaxSendEventAttempts = maxSendEventAttempts;
             SendEventRetryInterval = sendEventRetryInterval;
 
+            DataSyncMethod = dataSyncMethod;
+            PoollingInterval = pollingInterval;
+
             LoggerFactory = loggerFactory;
         }
 
@@ -159,7 +169,7 @@ namespace FeatBit.ClientSdk
             var newOptions = new FbOptions(StartWaitTime, Offline, EnvSecret, StreamingUri, EventUri, ConnectTimeout,
                 CloseTimeout, KeepAliveInterval, ReconnectRetryDelays, MaxFlushWorker, AutoFlushInterval, FlushTimeout,
                 MaxEventsInQueue, MaxEventPerRequest, MaxSendEventAttempts, SendEventRetryInterval,
-                LoggerFactory);
+                LoggerFactory, DataSyncMethod, PoollingInterval);
 
             return newOptions;
         }
