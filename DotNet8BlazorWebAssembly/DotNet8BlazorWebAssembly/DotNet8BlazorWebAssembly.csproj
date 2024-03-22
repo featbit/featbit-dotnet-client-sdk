@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\FeatBit.ClientSdk\FeatBit.ClientSdk.csproj" />
     <ProjectReference Include="..\DotNet8BlazorWebAssembly.Client\DotNet8BlazorWebAssembly.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
   </ItemGroup>

@@ -27,7 +27,7 @@ namespace FeatBit.ClientSdk
         {
             _featureFlagsCollection = featureFlagsCollection;
             _apiService = new FeatBitRestfulService(options);
-            _logger = options.LoggerFactory.CreateLogger<PollingDataSynchronizer>();
+            //_logger = options.LoggerFactory.CreateLogger<PollingDataSynchronizer>();
 
             // Shallow copy so we don't mutate the user-defined options object.
             var shallowCopiedOptions = options.ShallowCopy();

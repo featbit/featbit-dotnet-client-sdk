@@ -23,7 +23,7 @@ namespace FeatBit.ClientSdk
         public FbClient(FbOptions options)
         {
             _options = options;
-            _logger = options.LoggerFactory.CreateLogger<FbClient>();
+            // _logger = options.LoggerFactory.CreateLogger<FbClient>();
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
             _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
             _apiService = new FeatBitRestfulService(options);
@@ -44,33 +44,33 @@ namespace FeatBit.ClientSdk
 
         public void Start()
         {
-            _logger.LogInformation("Starting FbClient...");
+            //_logger.LogInformation("Starting FbClient...");
             var task = _dataSynchronizer.StartAsync();
             try
             {
                 var startWaitTime = _options.StartWaitTime.TotalMilliseconds;
-                _logger.LogInformation(
-                    "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", startWaitTime
-                );
+                //_logger.LogInformation(
+                //    "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", startWaitTime
+                //);
                 var success = task.Wait(_options.StartWaitTime);
                 if (success)
                 {
-                    _logger.LogInformation("FbClient successfully started");
+                    //_logger.LogInformation("FbClient successfully started");
                 }
                 else
                 {
-                    _logger.LogError(
-                        "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
-                        "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
-                        "Please double-check your EnvSecret and StreamingUri configuration.",
-                        startWaitTime
-                    );
+                    //_logger.LogError(
+                    //    "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
+                    //    "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
+                    //    "Please double-check your EnvSecret and StreamingUri configuration.",
+                    //    startWaitTime
+                    //);
                 }
             }
             catch (Exception ex)
             {
                 // we do not want to throw exceptions from the FbClient constructor, so we'll just swallow this.
-                _logger.LogError(ex, "An exception occurred during FbClient initialization.");
+                //_logger.LogError(ex, "An exception occurred during FbClient initialization.");
             }
         }
 
