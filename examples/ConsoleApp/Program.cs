@@ -6,7 +6,7 @@ Console.WriteLine("Hello, World!");
 
 
 var consoleLoggerFactory = LoggerFactory.Create(x => x.AddConsole());
-var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
+var options = new FbOptionsBuilder("xxx")
                     .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
                     .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
                     .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
