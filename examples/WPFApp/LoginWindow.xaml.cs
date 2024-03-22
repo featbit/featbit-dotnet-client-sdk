@@ -1,5 +1,5 @@
 ﻿using FeatBit.ClientSdk;
-using FeatBit.ClientSdk.Singletons;
+using FeatBit.ClientSdk.Models;
 using System.Windows;
 
 namespace WPFApp
@@ -22,13 +22,12 @@ namespace WPFApp
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var fakeUser = FbIdentity.Builder("a-unique-key-of-fake-user-001")
+            var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-001")
                             .Name("Fake User 001")
                             .Custom("age", "15")
                             .Custom("country", "FR")
                             .Build();
             _fbClient.Identify(fakeUser);
-            Task.Run(async () => await _fbClient.LoadLatestCollectionFromRemoteServerAsync()).Wait();
             _mainModel.Show();
             this.Close();
         }

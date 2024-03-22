@@ -1,22 +1,19 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Net.Http;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using FeatBit.ClientSdk.DataSynchronizer;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
-using FeatBit.ClientSdk;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FeatBit.ClientSdk.Services
 {
     public interface IFeatBitRestfulService
     {
-        Task<List<FeatureFlag>> GetLatestAllAsync(FbIdentity identity);
+        Task<List<FeatureFlag>> GetLatestAllAsync(FbUser identity, CancellationTokenSource cts);
     }
 
     public class FeatBitRestfulService: IFeatBitRestfulService
@@ -29,7 +26,7 @@ namespace FeatBit.ClientSdk.Services
             _logger = options.LoggerFactory.CreateLogger<FeatBitRestfulService>();
         }
 
-        public async Task<List<FeatureFlag>> GetLatestAllAsync(FbIdentity identity)
+        public async Task<List<FeatureFlag>> GetLatestAllAsync(FbUser identity, CancellationTokenSource cts)
         {
             var url = $"{_options.EventUri}api/public/sdk/client/latest-all";
             var requestBody = new
@@ -50,7 +47,7 @@ namespace FeatBit.ClientSdk.Services
 
                 try
                 {
-                    var response = await httpClient.PostAsync(url, content);
+                    var response = await httpClient.PostAsync(url, content, cts.Token);
 
                     if (response.IsSuccessStatusCode)
                     {

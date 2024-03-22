@@ -25,5 +25,10 @@ namespace FeatBit.ClientSdk
             Variation = variation;
             VariationType = variationType;
         }
+
+        public FeatureFlag ShallowCopy()
+        {
+            return (FeatureFlag)MemberwiseClone();
+        }
     }
 }

@@ -11,22 +11,17 @@ namespace FeatBit.ClientSdk
         /// </summary>
         /// <value>true if the client is ready</value>
         bool Initialized { get; }
-        void Identify(FbIdentity identity);
+        void Identify(FbUser identity);
         void Logout();
-        void LoadLatestCollectionFromRemoteServer();
-        Task LoadLatestCollectionFromRemoteServerAsync();
-        void LoadLatestCollection(List<FeatureFlag> featureFlags);
-        Task LoadLocalCollectionAsync(Func<Task<List<FeatureFlag>>> loadActionAsync);
-        List<FeatureFlag> GetAllFeatures();
-        void SaveToLocal(Action<List<FeatureFlag>> action);
+        void SaveToLocal(Action<Dictionary<string, FeatureFlag>> action);
         bool BoolVariation(string key, bool defaultValue = false);
         int IntVariation(string key, int defaultValue = 0);
         float FloatVariation(string key, float defaultValue = 0);
         double DoubleVariation(string key, double defaultValue = 0);
         string StringVariation(string key, string defaultValue = "");
         T ObjectVariation<T>(string key, T defaultValue = default);
-        void Track(FbIdentity user, string eventName);
-        void Track(FbIdentity user, string eventName, double metricValue);
+        void Track(FbUser user, string eventName);
+        void Track(FbUser user, string eventName, double metricValue);
         void Flush();
         bool FlushAndWait(TimeSpan timeout);
         Task CloseAsync();

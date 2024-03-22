@@ -1,8 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
 using FeatBit.ClientSdk;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-Console.WriteLine("Hello, World!");
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+await builder.Build().RunAsync();
 
 
 var consoleLoggerFactory = LoggerFactory.Create(x => x.AddConsole());
@@ -23,7 +24,7 @@ var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-001")
                 .Build();
 fbClient.Identify(fakeUser);
 
-if(fbClient.Initialized)
+if (fbClient.Initialized)
 {
     Console.WriteLine("Client is initialized");
     Console.WriteLine("testing-visibility:" + fbClient.StringVariation("testing-visibility", "Collapsed"));
@@ -32,7 +33,3 @@ else
 {
     Console.WriteLine("Client is not initialized");
 }
-
-
-await fbClient.CloseAsync();
-

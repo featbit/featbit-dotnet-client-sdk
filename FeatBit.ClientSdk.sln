@@ -13,6 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{CB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPFApp", "examples\WPFApp\WPFApp.csproj", "{4FD836A5-E188-40CB-A3F4-34A6448CB143}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNet8BlazorWebAssembly", "DotNet8BlazorWebAssembly\DotNet8BlazorWebAssembly\DotNet8BlazorWebAssembly.csproj", "{637760F4-5664-4C46-A75C-18AFF32631F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNet8BlazorWebAssembly.Client", "DotNet8BlazorWebAssembly\DotNet8BlazorWebAssembly.Client\DotNet8BlazorWebAssembly.Client.csproj", "{CA668BC9-63CD-46E7-8C2D-8E92C3A01FA1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +35,14 @@ Global
 		{4FD836A5-E188-40CB-A3F4-34A6448CB143}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FD836A5-E188-40CB-A3F4-34A6448CB143}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FD836A5-E188-40CB-A3F4-34A6448CB143}.Release|Any CPU.Build.0 = Release|Any CPU
+		{637760F4-5664-4C46-A75C-18AFF32631F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{637760F4-5664-4C46-A75C-18AFF32631F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{637760F4-5664-4C46-A75C-18AFF32631F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{637760F4-5664-4C46-A75C-18AFF32631F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA668BC9-63CD-46E7-8C2D-8E92C3A01FA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA668BC9-63CD-46E7-8C2D-8E92C3A01FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA668BC9-63CD-46E7-8C2D-8E92C3A01FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA668BC9-63CD-46E7-8C2D-8E92C3A01FA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +51,8 @@ Global
 		{803B65EF-83E0-483A-9DD7-CFA33CE6A804} = {88D7A6F6-FD32-40ED-B760-E935250C1A13}
 		{65445ACE-964D-4C54-A1E9-9356F26BB1E0} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
 		{4FD836A5-E188-40CB-A3F4-34A6448CB143} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
+		{637760F4-5664-4C46-A75C-18AFF32631F1} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
+		{CA668BC9-63CD-46E7-8C2D-8E92C3A01FA1} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BF0A076D-C755-4C00-8376-E621E4CC9D59}

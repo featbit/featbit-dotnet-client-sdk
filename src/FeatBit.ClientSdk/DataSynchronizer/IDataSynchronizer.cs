@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace FeatBit.ClientSdk
 {
@@ -11,6 +8,8 @@ namespace FeatBit.ClientSdk
         /// Indicates whether the data synchronizer has finished initializing.
         /// </summary>
         public bool Initialized { get; }
+
+        void Identify(FbUser fbUser);
 
         /// <summary>
         /// Starts the data synchronizer. This is called once from the <see cref="FbClient"/> constructor.

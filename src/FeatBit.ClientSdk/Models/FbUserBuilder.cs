@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using FeatBit.ClientSdk.Singletons;
 
 namespace FeatBit.ClientSdk
 {
     public interface IFbUserBuilder
     {
         /// <summary>
-        /// Creates a <see cref="FbIdentity"/> based on the properties that have been set on the builder.
-        /// Modifying the builder after this point does not affect the returned <see cref="FbIdentity"/>.
+        /// Creates a <see cref="FbUser"/> based on the properties that have been set on the builder.
+        /// Modifying the builder after this point does not affect the returned <see cref="FbUser"/>.
         /// </summary>
-        /// <returns>the configured <see cref="FbIdentity"/> object</returns>
-        FbIdentity Build();
+        /// <returns>the configured <see cref="FbUser"/> object</returns>
+        FbUser Build();
 
         /// <summary>
         /// Sets the full name for a user.
@@ -42,9 +41,9 @@ namespace FeatBit.ClientSdk
             _custom = new Dictionary<string, string>();
         }
 
-        public FbIdentity Build()
+        public FbUser Build()
         {
-            return new FbIdentity(_key, _name, _custom);
+            return new FbUser(_key, _name, _custom);
         }
 
         public IFbUserBuilder Name(string name)

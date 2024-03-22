@@ -1,13 +1,10 @@
-﻿using FeatBit.ClientSdk.Concurrent;
-using FeatBit.ClientSdk.Singletons;
+﻿using FeatBit.ClientSdk.Services;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -15,109 +12,98 @@ namespace FeatBit.ClientSdk
 {
     public class FbClient : IFbClient
     {
-        public bool Initialized => throw new NotImplementedException();
+        public bool Initialized => _dataSynchronizer.Initialized;
         private readonly FbOptions _options;
         private readonly ILogger _logger;
-        private FbIdentity _identity;
-        private readonly FeatureFlagsCollection _featureFlagsCollection;
+        private FbUser _fbUser;
         internal readonly IDataSynchronizer _dataSynchronizer;
+        private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
+        private readonly IFeatBitRestfulService _apiService;
 
         public FbClient(FbOptions options)
         {
             _options = options;
             _logger = options.LoggerFactory.CreateLogger<FbClient>();
-            _featureFlagsCollection = FeatureFlagsCollection.Instance;
-            _dataSynchronizer = new PollingDataSynchronizer(options);
+            _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
+            _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
+            _apiService = new FeatBitRestfulService(options);
+
+            Start();
         }
 
-        public void Identify(FbIdentity identity)
+        /// <summary>
+        /// Identify will recall the API to get the latest feature flags for the user.
+        /// </summary>
+        /// <param name="fbUser"></param>
+        /// <returns></returns>
+        public void Identify(FbUser fbUser)
         {
-            _identity = identity;
+            _fbUser = fbUser.ShallowCopy();
+            _dataSynchronizer.Identify(fbUser);
         }
 
-        public Task<bool> StartAsync()
+        public void Start()
         {
-            _dataSynchronizer.StartAsync();
+            _logger.LogInformation("Starting FbClient...");
+            var task = _dataSynchronizer.StartAsync();
+            try
+            {
+                var startWaitTime = _options.StartWaitTime.TotalMilliseconds;
+                _logger.LogInformation(
+                    "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", startWaitTime
+                );
+                var success = task.Wait(_options.StartWaitTime);
+                if (success)
+                {
+                    _logger.LogInformation("FbClient successfully started");
+                }
+                else
+                {
+                    _logger.LogError(
+                        "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
+                        "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
+                        "Please double-check your EnvSecret and StreamingUri configuration.",
+                        startWaitTime
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                // we do not want to throw exceptions from the FbClient constructor, so we'll just swallow this.
+                _logger.LogError(ex, "An exception occurred during FbClient initialization.");
+            }
         }
 
         public void Logout()
         {
-            _identity = null;
+            _fbUser = null;
         }
 
         #region initialization methods
-        public void LoadLatestCollectionFromRemoteServer()
+        public void SaveToLocal(Action<Dictionary<string, FeatureFlag>> action)
         {
+            var newDic = _featureFlagsCollection.ToDictionary(x => x.Key, x => x.Value.ShallowCopy());
+            action(newDic);
         }
 
-        public async Task LoadLatestCollectionFromRemoteServerAsync()
-        {
-            LoadLatestCollection(await RetriveFeatureFlagsFromServerByHttpAPIAsync());
-        }
+        #endregion
 
-        public void LoadLatestCollection(List<FeatureFlag> featureFlags)
-        {
-            _featureFlagsCollection.InitOrUpdateCollection(featureFlags);
-        }
 
-        public async Task LoadLocalCollectionAsync(Func<Task<List<FeatureFlag>>> loadActionAsync)
+        #region utils
+        private FeatureFlag ComposeNewFeatureFlagValue(string key, string value, string type)
         {
-            var featureFlags = await loadActionAsync();
-            LoadLatestCollection(featureFlags);
-        }
-
-        public List<FeatureFlag> GetAllFeatures()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SaveToLocal(Action<List<FeatureFlag>> action)
-        {
-            action(_featureFlagsCollection.GetAllLatestFeatureFlags());
-        }
-
-        private async Task<List<FeatureFlag>> RetriveFeatureFlagsFromServerByHttpAPIAsync()
-        {
-            var url = $"{_options.EventUri}api/public/sdk/client/latest-all";
-            var requestBody = new
+            return new FeatureFlag
             {
-                keyId = _identity.Key,
-                name = _identity.Name,
-                customizedProperties = _identity.Custom.ToArray()
+                Id = key,
+                Variation = value,
+                VariationType = type
             };
-
-            using (var httpClient = new HttpClient())
-            {
-                httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                var contentStr = JsonSerializer.Serialize(requestBody);
-                var content = new StringContent(contentStr, Encoding.UTF8, "application/json");
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-                try
-                {
-                    var response = await httpClient.PostAsync(url, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Console.WriteLine("Response received successfully:");
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        return JsonSerializer.Deserialize<List<FeatureFlag>>(responseContent) ?? new List<FeatureFlag>();
-                    }
-                    else
-                    {
-                        throw new Exception("Failed to retrieve feature flags from server");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to retrieve feature flags from server");
-                    throw;
-                }
-            }
+        }   
+        private void UpdateFeatureFlagNewValueToCollection(string key, string value, string type)
+        {
+            var ffNewValue = ComposeNewFeatureFlagValue(key, value, type);
+            _featureFlagsCollection.AddOrUpdate(key, ffNewValue, (existingKey, existingValue) => ffNewValue);
         }
-
         #endregion
 
         #region evaluation methods
@@ -137,12 +123,7 @@ namespace FeatBit.ClientSdk
             }
             else
             {
-                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
-                {
-                    Id = key,
-                    Variation = defaultValue.ToString().ToLower(),
-                    VariationType = "boolean"
-                });
+                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "boolean");
                 return defaultValue;
             }
         }
@@ -152,23 +133,15 @@ namespace FeatBit.ClientSdk
             FeatureFlag ff = new FeatureFlag();
             if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
-                if (ff.VariationType.ToLower() == "number")
-                {
-                    return Convert.ToDouble(ff.Variation);
-                }
-                else
+                if (ff.VariationType.ToLower() != "number")
                 {
                     throw new Exception("Variation type is not Double");
                 }
+                return Convert.ToDouble(ff.Variation);
             }
             else
             {
-                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
-                {
-                    Id = key,
-                    Variation = defaultValue.ToString().ToLower(),
-                    VariationType = "number"
-                });
+                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "number");
                 return defaultValue;
             }
         }
@@ -178,23 +151,15 @@ namespace FeatBit.ClientSdk
             FeatureFlag ff = new FeatureFlag();
             if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
-                if (ff.VariationType.ToLower() == "number")
-                {
-                    return float.Parse(ff.Variation.ToLower(), CultureInfo.InvariantCulture.NumberFormat);
-                }
-                else
+                if (ff.VariationType.ToLower() != "number")
                 {
                     throw new Exception("Variation type is not Float");
                 }
+                return float.Parse(ff.Variation.ToLower(), CultureInfo.InvariantCulture.NumberFormat);
             }
             else
             {
-                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
-                {
-                    Id = key,
-                    Variation = defaultValue.ToString().ToLower(),
-                    VariationType = "number"
-                });
+                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "number");
                 return defaultValue;
             }
         }
@@ -204,23 +169,15 @@ namespace FeatBit.ClientSdk
             FeatureFlag ff = new FeatureFlag();
             if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
-                if (ff.VariationType.ToLower() == "string")
-                {
-                    return JsonSerializer.Deserialize<T>(ff.Variation) ?? defaultValue;
-                }
-                else
+                if (ff.VariationType.ToLower() != "string")
                 {
                     throw new Exception("Variation type is not Json");
                 }
+                return JsonSerializer.Deserialize<T>(ff.Variation) ?? defaultValue;
             }
             else
             {
-                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
-                {
-                    Id = key,
-                    Variation = JsonSerializer.Serialize(defaultValue),
-                    VariationType = "string"
-                });
+                UpdateFeatureFlagNewValueToCollection(key, JsonSerializer.Serialize(defaultValue), "string");
                 return defaultValue;
             }
         }
@@ -230,23 +187,15 @@ namespace FeatBit.ClientSdk
             FeatureFlag ff = new FeatureFlag();
             if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
-                if (ff.VariationType.ToLower() == "number")
-                {
-                    return Convert.ToInt32(ff.Variation);
-                }
-                else
+                if (ff.VariationType.ToLower() != "number")
                 {
                     throw new Exception("Variation type is not Number");
                 }
+                return Convert.ToInt32(ff.Variation);
             }
             else
             {
-                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
-                {
-                    Id = key,
-                    Variation = defaultValue.ToString().ToLower(),
-                    VariationType = "number"
-                });
+                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "number");
                 return defaultValue;
             }
         }
@@ -256,35 +205,27 @@ namespace FeatBit.ClientSdk
             FeatureFlag ff = new FeatureFlag();
             if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
             {
-                if (ff.VariationType.ToLower() == "string")
-                {
-                    return ff.Variation;
-                }
-                else
+                if (ff.VariationType.ToLower() != "string")
                 {
                     throw new Exception("Variation type is not String");
                 }
+                return ff.Variation;
             }
             else
             {
-                _featureFlagsCollection.AddOrUpdate(key, new FeatureFlag
-                {
-                    Id = key,
-                    Variation = defaultValue.ToString(),
-                    VariationType = "string"
-                });
+                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString(), "string");
                 return defaultValue;
             }
         }
 
         #endregion
 
-        public void Track(FbIdentity user, string eventName)
+        public void Track(FbUser user, string eventName)
         {
             throw new NotImplementedException();
         }
 
-        public void Track(FbIdentity user, string eventName, double metricValue)
+        public void Track(FbUser user, string eventName, double metricValue)
         {
             throw new NotImplementedException();
         }
@@ -302,9 +243,8 @@ namespace FeatBit.ClientSdk
         {
             _logger.LogInformation("Closing FbClient...");
             await _dataSynchronizer.StopAsync();
-            _eventProcessor.FlushAndClose(_options.FlushTimeout);
+            //_eventProcessor.FlushAndClose(_options.FlushTimeout);
             _logger.LogInformation("FbClient successfully closed.");
         }
-
     }
 }
