@@ -1,4 +1,6 @@
-﻿using FeatBit.ClientSdk.Services;
+﻿using FeatBit.ClientSdk.Enums;
+using FeatBit.ClientSdk.Events;
+using FeatBit.ClientSdk.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -13,6 +15,8 @@ namespace FeatBit.ClientSdk
     public class FbClient : IFbClient
     {
         public bool Initialized => _dataSynchronizer.Initialized;
+        public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
+
         private readonly FbOptions _options;
         private readonly ILogger _logger;
         private FbUser _fbUser;
@@ -20,7 +24,7 @@ namespace FeatBit.ClientSdk
         private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
         private readonly IFeatBitRestfulService _apiService;
 
-        public FbClient(FbOptions options)
+        public FbClient(FbOptions options, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
         {
             _options = options;
             // _logger = options.LoggerFactory.CreateLogger<FbClient>();
@@ -28,7 +32,8 @@ namespace FeatBit.ClientSdk
             _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
             _apiService = new FeatBitRestfulService(options);
 
-            Start();
+            if(applicatoinType == ApplicationTypeEnum.Standard)
+                Start();
         }
 
         /// <summary>
@@ -44,34 +49,45 @@ namespace FeatBit.ClientSdk
 
         public void Start()
         {
-            //_logger.LogInformation("Starting FbClient...");
+            _logger.LogInformation("Starting FbClient...");
             var task = _dataSynchronizer.StartAsync();
             try
             {
                 var startWaitTime = _options.StartWaitTime.TotalMilliseconds;
-                //_logger.LogInformation(
-                //    "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", startWaitTime
-                //);
+                _logger.LogInformation(
+                    "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", startWaitTime
+                );
                 var success = task.Wait(_options.StartWaitTime);
                 if (success)
                 {
-                    //_logger.LogInformation("FbClient successfully started");
+                    _logger.LogInformation("FbClient successfully started");
                 }
                 else
                 {
-                    //_logger.LogError(
-                    //    "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
-                    //    "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
-                    //    "Please double-check your EnvSecret and StreamingUri configuration.",
-                    //    startWaitTime
-                    //);
+                    _logger.LogError(
+                        "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
+                        "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
+                        "Please double-check your EnvSecret and StreamingUri configuration.",
+                        startWaitTime
+                    );
                 }
             }
             catch (Exception ex)
             {
                 // we do not want to throw exceptions from the FbClient constructor, so we'll just swallow this.
-                //_logger.LogError(ex, "An exception occurred during FbClient initialization.");
+                _logger.LogError(ex, "An exception occurred during FbClient initialization.");
             }
+        }
+
+        public async Task StartForWebAssemblyAsync()
+        {
+            await _dataSynchronizer.StartForWebAssemblyAsync();
+            _dataSynchronizer.FeatureFlagsUpdated += DataSynchronizer_FeatureFlagsUpdated;
+        }
+
+        private void DataSynchronizer_FeatureFlagsUpdated(object sender, FeatureFlagsUpdatedEventArgs e)
+        {
+            FeatureFlagsUpdated?.Invoke(sender, e);
         }
 
         public void Logout()

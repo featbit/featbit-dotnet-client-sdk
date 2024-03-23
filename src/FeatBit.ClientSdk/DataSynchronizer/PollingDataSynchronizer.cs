@@ -1,7 +1,10 @@
-﻿using FeatBit.ClientSdk.Services;
+﻿using FeatBit.ClientSdk.Events;
+using FeatBit.ClientSdk.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,6 +13,7 @@ namespace FeatBit.ClientSdk
     internal class PollingDataSynchronizer : IDataSynchronizer
     {
         public bool Initialized { get; private set; }
+        public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
 
         private readonly System.Timers.Timer _timer;
         private readonly FbOptions _options;
@@ -58,71 +62,45 @@ namespace FeatBit.ClientSdk
             _fbUser = fbUser.ShallowCopy();
         }
 
-        public Task<bool> StartAsync()
+        public async Task<bool> StartAsync()
         {
-            Task.Run(() =>
-            {
-                var cts = new CancellationTokenSource(_options.ConnectTimeout);
-                return FirstTimeCallApi(cts);
-            });
-            
-            _timer.Elapsed += async (sender, e) => await DoDataSyncAsync();
+            RefreshFeatureFlagsCollection(await _apiService.GetLatestAllAsync(_fbUser));
+
+            _timer.Elapsed += async (sender, e) => {
+                RefreshFeatureFlagsCollection(await _apiService.GetLatestAllAsync(_fbUser));
+            };
             _timer.AutoReset = true;
             _timer.Start();
 
-            return _initTcs.Task;
+            return true;
         }
 
-        private async Task FirstTimeCallApi(CancellationTokenSource cts)
-        { 
-            var ffs = await _apiService.GetLatestAllAsync(_fbUser, cts);
-            if (ffs != null && ffs.Count > 0)
-            {
-                foreach (var item in ffs)
-                {
-                    _featureFlagsCollection.AddOrUpdate(item.Id, item, (existingKey, existingValue) => item);
-                }
-                if (_initTcs.Task.IsCompleted == false)
-                    CompleteInitialize();
-            }
-            else
-            {
-                var ex = new TimeoutException("Data synchronization timed out.");
-                _logger.LogError(ex, ex.Message);
-                if (_initTcs.Task.IsCompleted == false)
-                    _initTcs.TrySetException(ex);
-            }
-        }
-
-        private async Task DoDataSyncAsync()
+        private void RefreshFeatureFlagsCollection(List<FeatureFlag> ffs)
         {
-            var cts = new CancellationTokenSource(_options.ConnectTimeout);
-            var ffsTask = _apiService.GetLatestAllAsync(_fbUser, cts);
-            var delayTask = Task.Delay(_options.ConnectTimeout);
-            var completedTask = await Task.WhenAny(ffsTask, delayTask);
-            if (completedTask == ffsTask)
+            List<FeatureFlag> changedItems = new List<FeatureFlag>();
+
+            foreach (var item in ffs)
             {
-                var ffs = await ffsTask;
-                if (ffs != null && ffs.Count > 0)
+                if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) || 
+                    existingItem.Variation != item.Variation)
                 {
-                    foreach (var item in ffs)
-                    {
-                        _featureFlagsCollection.AddOrUpdate(item.Id, item, (existingKey, existingValue) => item);
-                    }
+                    changedItems.Add(item.ShallowCopy());
                 }
+                _featureFlagsCollection.AddOrUpdate(item.Id, item.ShallowCopy(), (existingKey, existingValue) => item.ShallowCopy());
             }
-            else
-            {
-                cts.Cancel();
-                var ex = new TimeoutException("Data synchronization timed out.");
-                _logger.LogError(ex, ex.Message);
-            }
+
+            var args = new FeatureFlagsUpdatedEventArgs();
+            args.UpdatedFeatureFlags = changedItems;
+            OnFeatureFlagsUpdated(args);
         }
 
-        private void CompleteInitialize()
+        protected virtual void OnFeatureFlagsUpdated(FeatureFlagsUpdatedEventArgs e)
         {
-            Initialized = true;
-            _initTcs.TrySetResult(true);
+            EventHandler<FeatureFlagsUpdatedEventArgs> handler = FeatureFlagsUpdated;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
         }
 
         public async Task StopAsync()

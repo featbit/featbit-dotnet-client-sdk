@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FeatBit.ClientSdk.Events;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace FeatBit.ClientSdk
         /// </summary>
         /// <value>true if the client is ready</value>
         bool Initialized { get; }
+        event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
         void Identify(FbUser identity);
         void Logout();
         void SaveToLocal(Action<Dictionary<string, FeatureFlag>> action);

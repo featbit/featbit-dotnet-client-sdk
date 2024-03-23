@@ -1,0 +1,72 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">@RenderMessage</a>
+        </div>
+        <article class="content px-4">
+            
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+
+@code {
+    public string RenderMessage = "Not rendered";
+    public FbClient FeatureFlagStore { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (FeatureFlagStore == null)
+        {
+            var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
+                                .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+                                .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
+                                .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+                                .StartWaitTime(TimeSpan.FromSeconds(10))
+                                .Build();
+            FeatureFlagStore = new FbClient(options, FeatBit.ClientSdk.Enums.ApplicationTypeEnum.WebAssembly);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await FeatureFlagStore.StartForWebAssemblyAsync();
+
+        FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
+        {
+            Console.WriteLine("FeatureFlagsUpdated");
+            InvokeAsync(() =>
+            {
+                RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
+            }).Wait();
+        };
+
+        // RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
+
+        // FbTimer = new System.Timers.Timer(2000);
+        // FbTimer.Elapsed += async (sender, e) => {
+        //     await FeatureFlagStore.StartForWebAssemblyAsync();
+        //     InvokeAsync(() =>
+        //     {
+        //         RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
+        //     }).Wait();
+            
+        // };
+        // FbTimer.AutoReset = true;
+        // FbTimer.Enabled = true;
+    }
+}

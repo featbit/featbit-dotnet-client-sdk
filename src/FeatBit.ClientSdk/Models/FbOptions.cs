@@ -137,7 +137,7 @@ namespace FeatBit.ClientSdk
             TimeSpan sendEventRetryInterval,
             ILoggerFactory loggerFactory,
             DataSyncMethodEnum dataSyncMethod = DataSyncMethodEnum.Polling,
-            int pollingInterval = 1000)
+            int pollingInterval = 5000)
         {
             StartWaitTime = startWaitTime;
             Offline = offline;

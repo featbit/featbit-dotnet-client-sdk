@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using FeatBit.ClientSdk.Events;
+using System;
+using System.Threading.Tasks;
 
 namespace FeatBit.ClientSdk
 {
@@ -9,18 +11,12 @@ namespace FeatBit.ClientSdk
         /// </summary>
         public bool Initialized { get; }
 
+        event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
+
         void Identify(FbUser fbUser);
 
-        /// <summary>
-        /// Starts the data synchronizer. This is called once from the <see cref="FbClient"/> constructor.
-        /// </summary>
-        /// <returns>a <c>Task</c> which is completed once the data synchronizer has finished starting up</returns>
         Task<bool> StartAsync();
 
-        /// <summary>
-        /// Stop the data synchronizer and dispose all resources.
-        /// </summary>
-        /// <returns>The <c>Task</c></returns>
         Task StopAsync();
     }
 }
