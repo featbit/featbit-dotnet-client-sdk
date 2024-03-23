@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace FeatBit.ClientSdk
 {
@@ -40,21 +41,7 @@ namespace FeatBit.ClientSdk
             _initTcs = new TaskCompletionSource<bool>();
             Initialized = false;
 
-            GenerateDefaultUser();
-
-            _timer = new System.Timers.Timer(_options.PoollingInterval);
-        }
-
-        public void GenerateDefaultUser()
-        {
-            _unloginUser = FbUser.Builder("unkown-" + Guid.NewGuid().ToString())
-                .Name("unkown " + Guid.NewGuid().ToString())
-                .Custom("ip", "unkown")
-                .Custom("device", "windows")
-                .Custom("application-type", "console")
-                .Build();
-            if (_fbUser == null)
-                _fbUser = _unloginUser.ShallowCopy();
+            _timer = new System.Timers.Timer(1);
         }
 
         public void Identify(FbUser fbUser)
@@ -62,17 +49,24 @@ namespace FeatBit.ClientSdk
             _fbUser = fbUser.ShallowCopy();
         }
 
-        public async Task<bool> StartAsync()
+        public async Task StartAsync()
         {
-            RefreshFeatureFlagsCollection(await _apiService.GetLatestAllAsync(_fbUser));
-
-            _timer.Elapsed += async (sender, e) => {
-                RefreshFeatureFlagsCollection(await _apiService.GetLatestAllAsync(_fbUser));
-            };
-            _timer.AutoReset = true;
+            _timer.Elapsed += async (sender, e) => await TimerElapsedAsync(sender, e);
+            _timer.AutoReset = false;
             _timer.Start();
+        }
 
-            return true;
+        private async Task TimerElapsedAsync(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if(_timer.Interval == 1)
+            {
+                _timer.Stop();
+                _timer.Interval = _options.PoollingInterval;
+                _timer.AutoReset = true;
+                _timer.Start();
+            }
+            var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
+            RefreshFeatureFlagsCollection(newFfs);
         }
 
         private void RefreshFeatureFlagsCollection(List<FeatureFlag> ffs)
@@ -105,7 +99,7 @@ namespace FeatBit.ClientSdk
 
         public async Task StopAsync()
         {
-            _timer.Elapsed -= async (sender, e) => await DoDataSyncAsync();
+            _timer.Elapsed -= async (sender, e) => await TimerElapsedAsync(sender, e);
             _timer.Stop();
             _timer.Close();
         }

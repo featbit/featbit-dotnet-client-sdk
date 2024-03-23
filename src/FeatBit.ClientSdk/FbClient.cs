@@ -20,6 +20,7 @@ namespace FeatBit.ClientSdk
         private readonly FbOptions _options;
         private readonly ILogger _logger;
         private FbUser _fbUser;
+        private FbUser _unloginUser;
         internal readonly IDataSynchronizer _dataSynchronizer;
         private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
         private readonly IFeatBitRestfulService _apiService;
@@ -31,9 +32,20 @@ namespace FeatBit.ClientSdk
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
             _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
             _apiService = new FeatBitRestfulService(options);
+            GenerateDefaultUser();
 
-            if(applicatoinType == ApplicationTypeEnum.Standard)
-                Start();
+            Task.Run(async () => await StartDataSyncAsync());
+        }
+
+        public void GenerateDefaultUser()
+        {
+            _unloginUser = FbUser.Builder("unkown-" + Guid.NewGuid().ToString())
+                .Name("unkown " + Guid.NewGuid().ToString())
+                .Custom("ip", "unkown")
+                .Custom("device", "windows")
+                .Custom("application-type", "console")
+                .Build();
+            _fbUser = _unloginUser.ShallowCopy();
         }
 
         /// <summary>
@@ -47,41 +59,20 @@ namespace FeatBit.ClientSdk
             _dataSynchronizer.Identify(fbUser);
         }
 
-        public void Start()
+        public async Task TryInitFeatureFlagsAsync()
         {
-            _logger.LogInformation("Starting FbClient...");
-            var task = _dataSynchronizer.StartAsync();
-            try
+            var ffs = await _apiService.GetLatestAllAsync(_fbUser);
+            _featureFlagsCollection.Clear();
+            foreach (var item in ffs)
             {
-                var startWaitTime = _options.StartWaitTime.TotalMilliseconds;
-                _logger.LogInformation(
-                    "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", startWaitTime
-                );
-                var success = task.Wait(_options.StartWaitTime);
-                if (success)
-                {
-                    _logger.LogInformation("FbClient successfully started");
-                }
-                else
-                {
-                    _logger.LogError(
-                        "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
-                        "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
-                        "Please double-check your EnvSecret and StreamingUri configuration.",
-                        startWaitTime
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                // we do not want to throw exceptions from the FbClient constructor, so we'll just swallow this.
-                _logger.LogError(ex, "An exception occurred during FbClient initialization.");
+                _featureFlagsCollection.TryAdd(item.Id, item.ShallowCopy());
             }
         }
 
-        public async Task StartForWebAssemblyAsync()
+        public async Task StartDataSyncAsync()
         {
-            await _dataSynchronizer.StartForWebAssemblyAsync();
+            _dataSynchronizer.Identify(_fbUser);
+            await _dataSynchronizer.StartAsync();
             _dataSynchronizer.FeatureFlagsUpdated += DataSynchronizer_FeatureFlagsUpdated;
         }
 
@@ -101,7 +92,6 @@ namespace FeatBit.ClientSdk
             var newDic = _featureFlagsCollection.ToDictionary(x => x.Key, x => x.Value.ShallowCopy());
             action(newDic);
         }
-
         #endregion
 
 

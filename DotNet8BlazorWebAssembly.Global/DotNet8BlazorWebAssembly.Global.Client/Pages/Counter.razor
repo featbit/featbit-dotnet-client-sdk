@@ -5,6 +5,7 @@
 <h1>Counter</h1>
 
 <p role="status">Current count: @currentCount</p>
+<p>RenderMessage: @renderMessage</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
@@ -13,12 +14,38 @@
     // [CascadingParameter]
     // private FbClient FeatureFlagStore { get; set; }
 
+    // [CascadingParameter]
+    // private string RenderMessage { get; set; }
+
     private int currentCount = 0;
+    private string renderMessage = "";
 
     private void IncrementCount()
     {
-        // if (FeatureFlagStore.StringVariation("testing-visibility", "Collapsed") == "Visible")
-        //     currentCount += 100;
+        // renderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
         currentCount++;
+    }
+
+    private FbClient FeatureFlagStore { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (FeatureFlagStore == null)
+        {
+            var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
+                                .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+                                .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
+                                .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+                                .Build();
+            FeatureFlagStore = new FbClient(options);
+            FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
+            {
+                InvokeAsync(() =>
+                {
+                    renderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
+                    StateHasChanged(); // Rerender the component
+                }).Wait();
+            };
+        }
     }
 }

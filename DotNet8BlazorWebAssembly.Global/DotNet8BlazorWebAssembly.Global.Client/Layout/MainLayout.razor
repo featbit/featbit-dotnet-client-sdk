@@ -25,48 +25,46 @@
 
 
 @code {
-    public string RenderMessage = "Not rendered";
-    public FbClient FeatureFlagStore { get; set; }
+    public string RenderMessage { get; set; }
+    private FbClient FeatureFlagStore { get; set; }
 
     protected override void OnInitialized()
     {
-        if (FeatureFlagStore == null)
-        {
-            var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
-                                .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
-                                .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
-                                .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
-                                .StartWaitTime(TimeSpan.FromSeconds(10))
-                                .Build();
-            FeatureFlagStore = new FbClient(options, FeatBit.ClientSdk.Enums.ApplicationTypeEnum.WebAssembly);
-        }
+        //     if (FeatureFlagStore == null)
+        //     {
+        //         var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
+        //                             .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+        //                             .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
+        //                             .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+        //                             .Build();
+        //         FeatureFlagStore = new FbClient(options, FeatBit.ClientSdk.Enums.ApplicationTypeEnum.WebAssembly);
+        //     }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await FeatureFlagStore.StartForWebAssemblyAsync();
-
-        FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
-        {
-            Console.WriteLine("FeatureFlagsUpdated");
-            InvokeAsync(() =>
-            {
-                RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
-            }).Wait();
-        };
-
-        // RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
-
-        // FbTimer = new System.Timers.Timer(2000);
-        // FbTimer.Elapsed += async (sender, e) => {
-        //     await FeatureFlagStore.StartForWebAssemblyAsync();
-        //     InvokeAsync(() =>
+        // if (FeatureFlagStore == null)
+        // {
+        //     var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
+        //                         .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+        //                         .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
+        //                         .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+        //                         .Build();
+        //     FeatureFlagStore = new FbClient(options, true);
+        //     await FeatureFlagStore.TryInitFeatureFlagsAsync();
+        //     for(int i=0; i<10; i++)
         //     {
         //         RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
-        //     }).Wait();
+        //     }
             
-        // };
-        // FbTimer.AutoReset = true;
-        // FbTimer.Enabled = true;
+        //     // FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
+        //     // {
+        //     //     InvokeAsync(() =>
+        //     //     {
+        //     //         RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
+        //     //     }).Wait();
+        //     // };
+        //     // await FeatureFlagStore.InitFeatureFlagsAsync();
+        // }
     }
 }

@@ -15,7 +15,7 @@ namespace FeatBit.ClientSdk
 
         void Identify(FbUser fbUser);
 
-        Task<bool> StartAsync();
+        Task StartAsync();
 
         Task StopAsync();
     }
