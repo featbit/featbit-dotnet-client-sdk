@@ -13,7 +13,7 @@ namespace FeatBit.ClientSdk
         /// <value>true if the client is ready</value>
         bool Initialized { get; }
         event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
-        Task StartDataSyncAsync();
+        void StartTimer();
         Task<List<FeatureFlag>> GetAndUpdateToLatestAllAsync();
         void Identify(FbUser identity);
         void Logout();

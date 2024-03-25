@@ -26,18 +26,32 @@ namespace FeatBit.ClientSdk
         private readonly IFeatBitRestfulService _apiService;
         private readonly ApplicationTypeEnum _appType;
 
-        public FbClient(FbOptions options, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
+        public FbClient(FbOptions options, bool autoSync = true, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
         {
             _options = options;
-            // _logger = options.LoggerFactory.CreateLogger<FbClient>();
+            _logger = options.LoggerFactory.CreateLogger<FbClient>();
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
             _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
             _apiService = new FeatBitRestfulService(options);
             _appType = applicatoinType;
             GenerateDefaultUser();
 
+            if (autoSync == true)
+                StartTimer();
+        }
+
+        public void StartTimer()
+        {
             Task.Run(async () => await StartDataSyncAsync());
         }
+
+        private async Task StartDataSyncAsync()
+        {
+            _dataSynchronizer.Identify(_fbUser);
+            _dataSynchronizer.FeatureFlagsUpdated += DataSynchronizer_FeatureFlagsUpdated;
+            await _dataSynchronizer.StartAsync();
+        }
+
 
         public void GenerateDefaultUser()
         {
@@ -64,13 +78,6 @@ namespace FeatBit.ClientSdk
                 _featureFlagsCollection.TryAdd(item.Id, item.ShallowCopy());
             }
             return ffs;
-        }
-
-        public async Task StartDataSyncAsync()
-        {
-            _dataSynchronizer.Identify(_fbUser);
-            await _dataSynchronizer.StartAsync();
-            _dataSynchronizer.FeatureFlagsUpdated += DataSynchronizer_FeatureFlagsUpdated;
         }
 
         private void DataSynchronizer_FeatureFlagsUpdated(object sender, FeatureFlagsUpdatedEventArgs e)

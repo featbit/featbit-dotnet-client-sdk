@@ -1,4 +1,5 @@
 ﻿@page "/counter"
+@inject ILoggerFactory LoggerFactory
 
 <PageTitle>Counter</PageTitle>
 
@@ -26,19 +27,19 @@
         currentCount++;
     }
 
+
     private FbClient FeatureFlagStore { get; set; }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (FeatureFlagStore == null)
-        {
-            var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
-                                .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
-                                .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
-                                .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
-                                .Build();
-            FeatureFlagStore = new FbClient(options);
-            FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
+        var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
+                            .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+                            .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
+                            .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+                            .LoggerFactory(LoggerFactory)
+                            .Build();
+        FeatureFlagStore = new FbClient(options);
+        FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
             {
                 InvokeAsync(() =>
                 {
@@ -46,6 +47,9 @@
                     StateHasChanged(); // Rerender the component
                 }).Wait();
             };
-        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
     }
 }

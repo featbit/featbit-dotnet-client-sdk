@@ -4,10 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace FeatBit.ClientSdk
 {
@@ -32,7 +29,7 @@ namespace FeatBit.ClientSdk
         {
             _featureFlagsCollection = featureFlagsCollection;
             _apiService = new FeatBitRestfulService(options);
-            //_logger = options.LoggerFactory.CreateLogger<PollingDataSynchronizer>();
+            _logger = options.LoggerFactory.CreateLogger<PollingDataSynchronizer>();
 
             // Shallow copy so we don't mutate the user-defined options object.
             var shallowCopiedOptions = options.ShallowCopy();
@@ -71,21 +68,32 @@ namespace FeatBit.ClientSdk
 
         private void RefreshFeatureFlagsCollection(List<FeatureFlag> ffs)
         {
-            List<FeatureFlag> changedItems = new List<FeatureFlag>();
-
-            foreach (var item in ffs)
+            try
             {
-                if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) || 
-                    existingItem.Variation != item.Variation)
-                {
-                    changedItems.Add(item.ShallowCopy());
-                }
-                _featureFlagsCollection.AddOrUpdate(item.Id, item.ShallowCopy(), (existingKey, existingValue) => item.ShallowCopy());
-            }
+                List<FeatureFlag> changedItems = new List<FeatureFlag>();
 
-            var args = new FeatureFlagsUpdatedEventArgs();
-            args.UpdatedFeatureFlags = changedItems;
-            OnFeatureFlagsUpdated(args);
+                _logger.LogInformation($"Latest Feature Flags Retrieving Started @ {DateTime.Now.ToString()}");
+
+                foreach (var item in ffs)
+                {
+                    if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) ||
+                        existingItem.Variation != item.Variation)
+                    {
+                        changedItems.Add(item.ShallowCopy());
+                    }
+                    _featureFlagsCollection.AddOrUpdate(item.Id, item.ShallowCopy(), (existingKey, existingValue) => item.ShallowCopy());
+                }
+
+                _logger.LogInformation($"Latest Feature Flags Retrieving Completed @ {DateTime.Now.ToString()}");
+
+                var args = new FeatureFlagsUpdatedEventArgs();
+                args.UpdatedFeatureFlags = changedItems;
+                OnFeatureFlagsUpdated(args);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Latest Feature Flags Retrieving Error @ {DateTime.Now.ToString()}");
+            }
         }
 
         protected virtual void OnFeatureFlagsUpdated(FeatureFlagsUpdatedEventArgs e)
