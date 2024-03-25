@@ -5,6 +5,7 @@
 <h1>Weather</h1>
 
 <p>This component demonstrates showing data.</p>
+<p>RenderMessage: @renderMessage</p>
 
 @if (forecasts == null)
 {
@@ -36,10 +37,16 @@ else
 }
 
 @code {
+    [CascadingParameter]
+    public FbClient FeatureFlagStore { get; set; }
+    private string renderMessage = "";
     private WeatherForecast[]? forecasts;
 
     protected override async Task OnInitializedAsync()
     {
+        renderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
+        StateHasChanged();
+
         // Simulate asynchronous loading to demonstrate a loading indicator
         await Task.Delay(500);
 
@@ -51,6 +58,10 @@ else
             TemperatureC = Random.Shared.Next(-20, 55),
             Summary = summaries[Random.Shared.Next(summaries.Length)]
         }).ToArray();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
     }
 
     private class WeatherForecast

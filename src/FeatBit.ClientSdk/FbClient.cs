@@ -52,7 +52,6 @@ namespace FeatBit.ClientSdk
             await _dataSynchronizer.StartAsync();
         }
 
-
         public void GenerateDefaultUser()
         {
             var randomKey = "random-" + Guid.NewGuid().ToString();

@@ -1,12 +1,8 @@
-﻿@page "/counter"
-@inject ILoggerFactory LoggerFactory
+﻿@inject ILoggerFactory LoggerFactory
 
-<PageTitle>Counter</PageTitle>
-
-<h1>Counter</h1>
-
-<p role="status">Current count: @currentCount</p>
-<p>RenderMessage: @renderMessage</p>
+<>
+    @Chil
+</>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
@@ -25,6 +21,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        renderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
         FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
          {
              InvokeAsync(() =>
@@ -33,11 +34,5 @@
                  StateHasChanged(); // Rerender the component
              }).Wait();
          };
-        renderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
-        StateHasChanged();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
     }
 }

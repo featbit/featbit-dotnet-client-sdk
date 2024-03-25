@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="WebAssembly\Counter.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WebAssembly\Counter.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Store\" />
   </ItemGroup>
 

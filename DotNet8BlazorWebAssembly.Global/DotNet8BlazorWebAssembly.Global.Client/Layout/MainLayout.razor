@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject ILoggerFactory LoggerFactory
 
 <div class="page">
     <div class="sidebar">
@@ -11,8 +12,9 @@
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">@RenderMessage</a>
         </div>
         <article class="content px-4">
-            
-            @Body
+            <CascadingValue Value="@FeatureFlagStore">
+                @Body
+            </CascadingValue>
         </article>
     </main>
 </div>
@@ -28,43 +30,27 @@
     public string RenderMessage { get; set; }
     private FbClient FeatureFlagStore { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        //     if (FeatureFlagStore == null)
-        //     {
-        //         var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
-        //                             .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
-        //                             .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
-        //                             .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
-        //                             .Build();
-        //         FeatureFlagStore = new FbClient(options, FeatBit.ClientSdk.Enums.ApplicationTypeEnum.WebAssembly);
-        //     }
+        var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
+                            .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+                            .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
+                            .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+                            .LoggerFactory(LoggerFactory)
+                            .Build();
+        FeatureFlagStore = new FbClient(options);
+        FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
+            {
+                InvokeAsync(() =>
+                {
+                    RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
+                    StateHasChanged(); // Rerender the component
+                }).Wait();
+            };
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // if (FeatureFlagStore == null)
-        // {
-        //     var options = new FbOptionsBuilder("s0ZIrZbMfEuZGv3UrDtskAUVG0I5KKrEyYAqZtyI-5IQ")
-        //                         .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
-        //                         .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
-        //                         .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
-        //                         .Build();
-        //     FeatureFlagStore = new FbClient(options, true);
-        //     await FeatureFlagStore.TryInitFeatureFlagsAsync();
-        //     for(int i=0; i<10; i++)
-        //     {
-        //         RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
-        //     }
-            
-        //     // FeatureFlagStore.FeatureFlagsUpdated += (sender, e) =>
-        //     // {
-        //     //     InvokeAsync(() =>
-        //     //     {
-        //     //         RenderMessage = FeatureFlagStore.StringVariation("testing-visibility", "Collapsed");
-        //     //     }).Wait();
-        //     // };
-        //     // await FeatureFlagStore.InitFeatureFlagsAsync();
-        // }
+
     }
 }

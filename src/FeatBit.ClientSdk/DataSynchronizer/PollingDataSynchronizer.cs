@@ -76,11 +76,12 @@ namespace FeatBit.ClientSdk
 
                 foreach (var item in ffs)
                 {
-                    if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) ||
-                        existingItem.Variation != item.Variation)
-                    {
-                        changedItems.Add(item.ShallowCopy());
-                    }
+                    //if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) ||
+                    //    existingItem.Variation != item.Variation)
+                    //{
+                    //    changedItems.Add(item.ShallowCopy());
+                    //}
+                    changedItems.Add(item.ShallowCopy());
                     _featureFlagsCollection.AddOrUpdate(item.Id, item.ShallowCopy(), (existingKey, existingValue) => item.ShallowCopy());
                 }
 

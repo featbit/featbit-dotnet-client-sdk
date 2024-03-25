@@ -46,7 +46,6 @@ namespace WPFApp
         }
         private void ExecuteMyCommand()
         {
-            Task.Run(async () => await _fbClient.LoadLatestCollectionFromRemoteServerAsync()).Wait();
             SomeProperty = $"Random Generate Guid {Guid.NewGuid().ToString()}";
         }
         #endregion
