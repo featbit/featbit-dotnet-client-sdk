@@ -24,6 +24,7 @@ namespace FeatBit.ClientSdk
         internal readonly IDataSynchronizer _dataSynchronizer;
         private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
         private readonly IFeatBitRestfulService _apiService;
+        private readonly ApplicationTypeEnum _appType;
 
         public FbClient(FbOptions options, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
         {
@@ -32,6 +33,7 @@ namespace FeatBit.ClientSdk
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
             _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
             _apiService = new FeatBitRestfulService(options);
+            _appType = applicatoinType;
             GenerateDefaultUser();
 
             Task.Run(async () => await StartDataSyncAsync());
@@ -39,27 +41,21 @@ namespace FeatBit.ClientSdk
 
         public void GenerateDefaultUser()
         {
-            _unloginUser = FbUser.Builder("unkown-" + Guid.NewGuid().ToString())
-                .Name("unkown " + Guid.NewGuid().ToString())
-                .Custom("ip", "unkown")
-                .Custom("device", "windows")
-                .Custom("application-type", "console")
+            var randomKey = "random-" + Guid.NewGuid().ToString();
+            _unloginUser = FbUser.Builder(randomKey)
+                .Name(randomKey)
+                .Custom("application-type", _appType.ToString())
                 .Build();
             _fbUser = _unloginUser.ShallowCopy();
         }
 
-        /// <summary>
-        /// Identify will recall the API to get the latest feature flags for the user.
-        /// </summary>
-        /// <param name="fbUser"></param>
-        /// <returns></returns>
         public void Identify(FbUser fbUser)
         {
             _fbUser = fbUser.ShallowCopy();
             _dataSynchronizer.Identify(fbUser);
         }
 
-        public async Task TryInitFeatureFlagsAsync()
+        public async Task<List<FeatureFlag>> GetAndUpdateToLatestAllAsync()
         {
             var ffs = await _apiService.GetLatestAllAsync(_fbUser);
             _featureFlagsCollection.Clear();
@@ -67,6 +63,7 @@ namespace FeatBit.ClientSdk
             {
                 _featureFlagsCollection.TryAdd(item.Id, item.ShallowCopy());
             }
+            return ffs;
         }
 
         public async Task StartDataSyncAsync()
