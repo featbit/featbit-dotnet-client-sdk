@@ -18,5 +18,7 @@ namespace FeatBit.ClientSdk
         Task StartAsync();
 
         Task StopAsync();
+
+        Task UpdateFeatureFlagCollectionAsync();
     }
 }

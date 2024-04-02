@@ -82,6 +82,12 @@ namespace FeatBit.ClientSdk
             RefreshFeatureFlagsCollection(newFfs, _fbUser.Key);
         }
 
+        public async Task UpdateFeatureFlagCollectionAsync()
+        {
+            var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
+            RefreshFeatureFlagsCollection(newFfs, _fbUser.Key);
+        }
+
         private void RefreshFeatureFlagsCollection(List<FeatureFlag> ffs, string fbUserKey)
         {
             try

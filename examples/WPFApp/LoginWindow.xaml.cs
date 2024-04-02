@@ -1,5 +1,5 @@
 ﻿using FeatBit.ClientSdk;
-using FeatBit.ClientSdk.Models;
+using System.Net;
 using System.Windows;
 
 namespace WPFApp
@@ -11,6 +11,7 @@ namespace WPFApp
     {
         private readonly IFbClient _fbClient;
         private readonly MainWindow _mainModel;
+
         public LoginWindow(
             MainWindow mainWindow,
             IFbClient fbClient)
@@ -22,14 +23,30 @@ namespace WPFApp
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-001")
-                            .Name("Fake User 001")
+            var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-002")
+                            .Name("Fake User 002")
                             .Custom("age", "15")
                             .Custom("country", "FR")
                             .Build();
-            _fbClient.Identify(fakeUser);
-            _mainModel.Show();
-            this.Close();
+
+            try
+            {
+                var task = Task.Run(async () =>
+                {
+                    await _fbClient.IdentifyAsync(fakeUser);
+                }).Wait(TimeSpan.FromSeconds(10));
+                if (task == false)
+                {
+                    MessageBox.Show("Failed to identify user. Please try again.");
+                    return;
+                }
+                _mainModel.Show();
+                this.Close();
+            }
+            catch(Exception exp)
+            {
+
+            }
         }
     }
 }

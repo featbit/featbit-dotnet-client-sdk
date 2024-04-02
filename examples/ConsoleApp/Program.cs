@@ -16,7 +16,7 @@ var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-001")
                 .Custom("age", "15")
                 .Custom("country", "FR")
                 .Build();
-var fbClient = new FbClient(options, fakeUser);
+var fbClient = new FbClient(options, fbUser: fakeUser, autoSync: true);
 
 fbClient.FeatureFlagsUpdated += (sender, e) =>
 {

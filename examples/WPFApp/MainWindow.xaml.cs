@@ -36,7 +36,6 @@ namespace WPFApp
 
         private void Button_Refresh_Click(object sender, RoutedEventArgs e)
         {
-            Task.Run(async () => await _fbClient.LoadLatestCollectionFromRemoteServerAsync()).Wait();
             SetVisibility();
         }
 
@@ -52,7 +51,7 @@ namespace WPFApp
                     TextBox_Thanks.Visibility = Visibility.Collapsed;
                     break;
                 default:
-                    TextBox_Thanks.Visibility = Visibility.Visible;
+                    TextBox_Thanks.Visibility = Visibility.Hidden;
                     break;
             }
         }

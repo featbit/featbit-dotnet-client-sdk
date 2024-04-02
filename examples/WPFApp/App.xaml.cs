@@ -25,11 +25,12 @@ namespace WPFApp
             {
                 builder.AddConsole();
             });
-            var options = new FbOptionsBuilder("*****")
-                                .Eval(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
+            var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
+                                .Eval(new Uri("https://featbit-tio-eval.zeabur.app"))
                                 .LoggerFactory(consoleLoggerFactory)
+                                .PollingInterval(5000)
                                 .Build();
-            services.AddSingleton<IFbClient>(provider => new FbClient(options));
+            services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: false));
             services.AddTransient<MainViewModel>();
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginWindow>();

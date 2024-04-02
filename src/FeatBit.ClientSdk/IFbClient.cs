@@ -15,8 +15,9 @@ namespace FeatBit.ClientSdk
         event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
         void StartTimer();
         void StopTimer();
-        Task<List<FeatureFlag>> GetAndUpdateToLatestAllAsync();
+        List<FeatureFlag> GetLatestAll();
         void Identify(FbUser identity);
+        Task IdentifyAsync(FbUser fbUser);
         void Logout();
         void SaveToLocal(Action<Dictionary<string, FeatureFlag>> action);
         bool BoolVariation(string key, bool defaultValue = false);

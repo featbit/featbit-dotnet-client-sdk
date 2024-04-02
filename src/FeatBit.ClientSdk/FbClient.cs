@@ -80,13 +80,21 @@ namespace FeatBit.ClientSdk
             _dataSynchronizer.Identify(fbUser);
         }
 
-        public async Task<List<FeatureFlag>> GetAndUpdateToLatestAllAsync()
+        public async Task IdentifyAsync(FbUser fbUser)
         {
-            var ffs = await _apiService.GetLatestAllAsync(_fbUser);
-            _featureFlagsCollection.Clear();
-            foreach (var item in ffs)
+            StopTimer();
+            _fbUser = fbUser.ShallowCopy();
+            _dataSynchronizer.Identify(fbUser);
+            await _dataSynchronizer.UpdateFeatureFlagCollectionAsync();
+            StartTimer();
+        }
+
+        public List<FeatureFlag> GetLatestAll()
+        {
+            var ffs = new List<FeatureFlag>();
+            foreach (var item in _featureFlagsCollection)
             {
-                _featureFlagsCollection.TryAdd(item.Id, item.ShallowCopy());
+                ffs.Add(item.Value.ShallowCopy());
             }
             return ffs;
         }
