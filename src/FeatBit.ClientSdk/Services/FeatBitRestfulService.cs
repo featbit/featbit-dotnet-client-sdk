@@ -28,7 +28,7 @@ namespace FeatBit.ClientSdk.Services
 
         public async Task<List<FeatureFlag>> GetLatestAllAsync(FbUser identity, CancellationTokenSource cts = null)
         {
-            var url = $"{_options.EventUri}api/public/sdk/client/latest-all";
+            var url = $"{_options.EvalUri}api/public/sdk/client/latest-all";
             var requestBody = new
             {
                 keyId = identity.Key,

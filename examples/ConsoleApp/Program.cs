@@ -6,33 +6,56 @@ Console.WriteLine("Hello, World!");
 
 
 var consoleLoggerFactory = LoggerFactory.Create(x => x.AddConsole());
-var options = new FbOptionsBuilder("xxx")
-                    .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
-                    .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
-                    .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
+                    .Eval(new Uri("https://featbit-tio-eval.zeabur.app"))
                     .LoggerFactory(consoleLoggerFactory)
-                    .StartWaitTime(TimeSpan.FromSeconds(10))
+                    .PollingInterval(5000)
                     .Build();
-
-var fbClient = new FbClient(options);
-
 var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-001")
                 .Name("Fake User 001")
                 .Custom("age", "15")
                 .Custom("country", "FR")
                 .Build();
+var fbClient = new FbClient(options, fakeUser);
+
+fbClient.FeatureFlagsUpdated += (sender, e) =>
+{
+    if(e.UpdatedFeatureFlags.Count > 0)
+    {
+        Console.WriteLine("Feature flags updated:");
+        foreach (var ff in e.UpdatedFeatureFlags)
+        {
+            Console.WriteLine($"{ff.Id}: {ff.Variation}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("No feature flags updated.");
+    }
+};
+
+Console.WriteLine("Press any key to simulate user login - 002");
+Console.ReadKey();
+Console.WriteLine("Key Pressed");
+
+fbClient.StopTimer();
+var fakeUser2 = FbUser.Builder("a-unique-key-of-fake-user-002")
+                .Name("Fake User 002")
+                .Custom("age", "18")
+                .Custom("country", "US")
+                .Build();
+fbClient.Identify(fakeUser2);
+fbClient.StartTimer();
+
+Console.WriteLine("Press any key to simulate user login - 001");
+Console.ReadKey();
+Console.WriteLine("Key Pressed");
+
+fbClient.StopTimer();
 fbClient.Identify(fakeUser);
+fbClient.StartTimer();
 
-if(fbClient.Initialized)
-{
-    Console.WriteLine("Client is initialized");
-    Console.WriteLine("testing-visibility:" + fbClient.StringVariation("testing-visibility", "Collapsed"));
-}
-else
-{
-    Console.WriteLine("Client is not initialized");
-}
-
+Console.ReadLine();
 
 await fbClient.CloseAsync();
 

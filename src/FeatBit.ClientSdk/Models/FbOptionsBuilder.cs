@@ -2,24 +2,17 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace FeatBit.ClientSdk
 {
     public class FbOptionsBuilder
     {
-        private TimeSpan _startWaitTime;
         private bool _offline;
 
         private readonly string _envSecret;
 
-        private Uri _streamingUri;
-        private Uri _eventUri;
-        private Uri _apiUri;
-
-        private TimeSpan _connectTimeout;
-        private TimeSpan _closeTimeout;
-        private TimeSpan _keepAliveInterval;
-        private TimeSpan[] _reconnectRetryDelays;
+        private Uri _evalUri;
 
         private int _maxFlushWorker;
         private TimeSpan _autoFlushInterval;
@@ -28,6 +21,7 @@ namespace FeatBit.ClientSdk
         private int _maxEventPerRequest;
         private int _maxSendEventAttempts;
         private TimeSpan _sendEventRetryInterval;
+        private long _poollingInterval;
 
         private ILoggerFactory _loggerFactory;
 
@@ -37,21 +31,12 @@ namespace FeatBit.ClientSdk
 
         public FbOptionsBuilder(string envSecret)
         {
-            _startWaitTime = TimeSpan.FromSeconds(5);
             _offline = false;
 
             _envSecret = envSecret;
 
             // uris
-            _streamingUri = new Uri("ws://localhost:5100");
-            _eventUri = new Uri("http://localhost:5100");
-            _apiUri = new Uri("http://localhost:5000");
-
-            // websocket configs
-            _connectTimeout = TimeSpan.FromSeconds(3);
-            _closeTimeout = TimeSpan.FromSeconds(2);
-            _keepAliveInterval = TimeSpan.FromSeconds(15);
-            _reconnectRetryDelays = DefaultRetryPolicy.DefaultRetryDelays;
+            _evalUri = new Uri("http://localhost:5100");
 
             // event configs
             _maxFlushWorker = Math.Min(Math.Max(Environment.ProcessorCount / 2, 1), 4);
@@ -67,20 +52,14 @@ namespace FeatBit.ClientSdk
 
         public FbOptions Build()
         {
-            return new FbOptions(_startWaitTime, _offline, _envSecret, _streamingUri, _eventUri, _connectTimeout,
-                _closeTimeout, _keepAliveInterval, _reconnectRetryDelays, _maxFlushWorker, _autoFlushInterval,
+            return new FbOptions(_offline, _envSecret, _evalUri, _maxFlushWorker, _autoFlushInterval,
                 _flushTimeout, _maxEventsInQueue, _maxEventPerRequest, _maxSendEventAttempts, _sendEventRetryInterval,
-                _loggerFactory);
+                _loggerFactory, _poollingInterval);
         }
 
-        public FbOptionsBuilder StartWaitTime(TimeSpan timeout)
+        public FbOptionsBuilder PollingInterval(long interval)
         {
-            if (timeout < _connectTimeout)
-            {
-                throw new InvalidOperationException("The start wait time must be greater than the connect timeout.");
-            }
-
-            _startWaitTime = timeout;
+            _poollingInterval = interval;
             return this;
         }
 
@@ -90,37 +69,9 @@ namespace FeatBit.ClientSdk
             return this;
         }
 
-        public FbOptionsBuilder Streaming(Uri uri)
+        public FbOptionsBuilder Eval(Uri uri)
         {
-            _streamingUri = uri;
-            return this;
-        }
-
-        public FbOptionsBuilder APIs(Uri uri)
-        {
-            _apiUri = uri;
-            return this;
-        }
-        public FbOptionsBuilder Event(Uri uri)
-        {
-            _eventUri = uri;
-            return this;
-        }
-
-        public FbOptionsBuilder ConnectTimeout(TimeSpan timeout)
-        {
-            if (timeout > _startWaitTime)
-            {
-                throw new InvalidOperationException("The connect timeout must be lower than the start wait time.");
-            }
-
-            _connectTimeout = timeout;
-            return this;
-        }
-
-        public FbOptionsBuilder CloseTimeout(TimeSpan timeout)
-        {
-            _closeTimeout = timeout;
+            _evalUri = uri;
             return this;
         }
 
@@ -163,18 +114,6 @@ namespace FeatBit.ClientSdk
         public FbOptionsBuilder SendEventRetryInterval(TimeSpan sendEventRetryInterval)
         {
             _sendEventRetryInterval = sendEventRetryInterval;
-            return this;
-        }
-
-        public FbOptionsBuilder KeepAliveInterval(TimeSpan interval)
-        {
-            _keepAliveInterval = interval;
-            return this;
-        }
-
-        public FbOptionsBuilder ReconnectRetryDelays(TimeSpan[] delays)
-        {
-            _reconnectRetryDelays = delays;
             return this;
         }
 

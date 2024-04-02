@@ -26,9 +26,7 @@ namespace WPFApp
                 builder.AddConsole();
             });
             var options = new FbOptionsBuilder("*****")
-                                .Event(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
-                                .Streaming(new Uri("wss://featbit-tio-eu-eval.azurewebsites.net"))
-                                .APIs(new Uri("https://featbit-tio-eu-api.azurewebsites.net"))
+                                .Eval(new Uri("https://featbit-tio-eu-eval.azurewebsites.net"))
                                 .LoggerFactory(consoleLoggerFactory)
                                 .Build();
             services.AddSingleton<IFbClient>(provider => new FbClient(options));

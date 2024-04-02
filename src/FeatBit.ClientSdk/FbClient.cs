@@ -17,7 +17,7 @@ namespace FeatBit.ClientSdk
         public bool Initialized => _dataSynchronizer.Initialized;
         public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
 
-        private readonly FbOptions _options;
+        //private readonly FbOptions _options;
         private readonly ILogger _logger;
         private FbUser _fbUser;
         private FbUser _unloginUser;
@@ -25,16 +25,15 @@ namespace FeatBit.ClientSdk
         private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
         private readonly IFeatBitRestfulService _apiService;
         private readonly ApplicationTypeEnum _appType;
-
-        public FbClient(FbOptions options, bool autoSync = true, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
+        public FbClient(FbOptions options, FbUser fbUser = null, bool autoSync = true, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
         {
-            _options = options;
+            //_options = options;
             _logger = options.LoggerFactory.CreateLogger<FbClient>();
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
             _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
             _apiService = new FeatBitRestfulService(options);
             _appType = applicatoinType;
-            GenerateDefaultUser();
+            GenerateDefaultUser(fbUser);
 
             if (autoSync == true)
                 StartTimer();
@@ -45,6 +44,12 @@ namespace FeatBit.ClientSdk
             Task.Run(async () => await StartDataSyncAsync());
         }
 
+        public void StopTimer()
+        {
+            _dataSynchronizer.FeatureFlagsUpdated -= DataSynchronizer_FeatureFlagsUpdated;
+            Task.Run(async () => await _dataSynchronizer.StopAsync()).Wait();
+        }
+
         private async Task StartDataSyncAsync()
         {
             _dataSynchronizer.Identify(_fbUser);
@@ -52,14 +57,21 @@ namespace FeatBit.ClientSdk
             await _dataSynchronizer.StartAsync();
         }
 
-        public void GenerateDefaultUser()
+        public void GenerateDefaultUser(FbUser fbUser)
         {
-            var randomKey = "random-" + Guid.NewGuid().ToString();
-            _unloginUser = FbUser.Builder(randomKey)
-                .Name(randomKey)
-                .Custom("application-type", _appType.ToString())
-                .Build();
-            _fbUser = _unloginUser.ShallowCopy();
+            if (fbUser == null)
+            {
+                var randomKey = "random-" + Guid.NewGuid().ToString();
+                _unloginUser = FbUser.Builder(randomKey)
+                    .Name(randomKey)
+                    .Custom("application-type", _appType.ToString())
+                    .Build();
+                _fbUser = _unloginUser.ShallowCopy();
+            }
+            else
+            {
+                _fbUser = fbUser.ShallowCopy();
+            }
         }
 
         public void Identify(FbUser fbUser)
@@ -251,6 +263,7 @@ namespace FeatBit.ClientSdk
         public async Task CloseAsync()
         {
             _logger.LogInformation("Closing FbClient...");
+            _dataSynchronizer.FeatureFlagsUpdated -= DataSynchronizer_FeatureFlagsUpdated;
             await _dataSynchronizer.StopAsync();
             //_eventProcessor.FlushAndClose(_options.FlushTimeout);
             _logger.LogInformation("FbClient successfully closed.");

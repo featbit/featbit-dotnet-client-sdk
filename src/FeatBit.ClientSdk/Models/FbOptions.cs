@@ -38,33 +38,7 @@ namespace FeatBit.ClientSdk
         /// The base URI of the event service
         /// </summary>
         /// <value>Defaults to http://localhost:5100</value>
-        public Uri EventUri { get; set; }
-
-        /// <summary>
-        /// The connection timeout. This is the time allowed for the WebSocket client to connect to the server.
-        /// </summary>
-        /// <remarks>
-        /// This value must lower then <see cref="StartWaitTime"/>.
-        /// </remarks>
-        /// <value>Defaults to 3 seconds</value>
-        public TimeSpan ConnectTimeout { get; set; }
-
-        /// <summary>
-        /// The close timeout. This is the time allowed for the WebSocket client to perform a graceful shutdown.
-        /// </summary>
-        /// <value>Defaults to 2 seconds</value>
-        public TimeSpan CloseTimeout { get; set; }
-
-        /// <summary>
-        /// The frequency at which to send Ping message.
-        /// </summary>
-        /// <value>Defaults to 15 seconds</value>
-        public TimeSpan KeepAliveInterval { get; set; }
-
-        /// <summary>
-        /// The connection retry delays.
-        /// </summary>
-        public TimeSpan[] ReconnectRetryDelays { get; set; }
+        public Uri EvalUri { get; set; }
 
         /// <summary>
         /// The event flush timeout.
@@ -116,18 +90,12 @@ namespace FeatBit.ClientSdk
 
         public DataSyncMethodEnum DataSyncMethod { get; set; }
 
-        public int PoollingInterval { get; set; }
+        public long PoollingInterval { get; set; }
 
         internal FbOptions(
-            TimeSpan startWaitTime,
             bool offline,
             string envSecret,
-            Uri streamingUri,
-            Uri eventUri,
-            TimeSpan connectTimeout,
-            TimeSpan closeTimeout,
-            TimeSpan keepAliveInterval,
-            TimeSpan[] reconnectRetryDelays,
+            Uri evalUri,
             int maxFlushWorker,
             TimeSpan autoFlushInterval,
             TimeSpan flushTimeout,
@@ -136,19 +104,12 @@ namespace FeatBit.ClientSdk
             int maxSendEventAttempts,
             TimeSpan sendEventRetryInterval,
             ILoggerFactory loggerFactory,
-            DataSyncMethodEnum dataSyncMethod = DataSyncMethodEnum.Polling,
-            int pollingInterval = 10000)
+            long pollingInterval)
         {
-            StartWaitTime = startWaitTime;
             Offline = offline;
 
             EnvSecret = envSecret;
-            StreamingUri = streamingUri;
-            EventUri = eventUri;
-            ConnectTimeout = connectTimeout;
-            CloseTimeout = closeTimeout;
-            KeepAliveInterval = keepAliveInterval;
-            ReconnectRetryDelays = reconnectRetryDelays;
+            EvalUri = evalUri;
 
             MaxFlushWorker = maxFlushWorker;
             AutoFlushInterval = autoFlushInterval;
@@ -158,18 +119,21 @@ namespace FeatBit.ClientSdk
             MaxSendEventAttempts = maxSendEventAttempts;
             SendEventRetryInterval = sendEventRetryInterval;
 
-            DataSyncMethod = dataSyncMethod;
-            PoollingInterval = pollingInterval;
+            if(pollingInterval > 0)
+            {
+                DataSyncMethod = DataSyncMethodEnum.Polling;
+                PoollingInterval = pollingInterval;
+            }
 
             LoggerFactory = loggerFactory;
         }
 
         internal FbOptions ShallowCopy()
         {
-            var newOptions = new FbOptions(StartWaitTime, Offline, EnvSecret, StreamingUri, EventUri, ConnectTimeout,
-                CloseTimeout, KeepAliveInterval, ReconnectRetryDelays, MaxFlushWorker, AutoFlushInterval, FlushTimeout,
+            var newOptions = new FbOptions(Offline, EnvSecret, EvalUri, 
+                MaxFlushWorker, AutoFlushInterval, FlushTimeout,
                 MaxEventsInQueue, MaxEventPerRequest, MaxSendEventAttempts, SendEventRetryInterval,
-                LoggerFactory, DataSyncMethod, PoollingInterval);
+                LoggerFactory, PoollingInterval);
 
             return newOptions;
         }

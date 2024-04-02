@@ -13,6 +13,7 @@ namespace FeatBit.ClientSdk
         public bool Initialized { get; private set; }
         public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
 
+        private const int _timerInitTimeSpan = 1;
         private readonly System.Timers.Timer _timer;
         private readonly FbOptions _options;
         private readonly TaskCompletionSource<bool> _initTcs;
@@ -20,8 +21,6 @@ namespace FeatBit.ClientSdk
         private readonly IFeatBitRestfulService _apiService;
         private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
         private FbUser _fbUser;
-        private FbUser _unloginUser;
-
 
         public PollingDataSynchronizer(
             FbOptions options,
@@ -38,7 +37,7 @@ namespace FeatBit.ClientSdk
             _initTcs = new TaskCompletionSource<bool>();
             Initialized = false;
 
-            _timer = new System.Timers.Timer(1);
+            _timer = new System.Timers.Timer();
         }
 
         public void Identify(FbUser fbUser)
@@ -48,14 +47,31 @@ namespace FeatBit.ClientSdk
 
         public async Task StartAsync()
         {
-            _timer.Elapsed += async (sender, e) => await TimerElapsedAsync(sender, e);
+            _timer.Interval = _timerInitTimeSpan;
+            _timer.Elapsed += TimerElapsed;
             _timer.AutoReset = false;
             _timer.Start();
         }
 
+        private void TimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (_timer.Interval == _timerInitTimeSpan)
+            {
+                _timer.Stop();
+                _timer.Interval = _options.PoollingInterval;
+                _timer.AutoReset = true;
+                _timer.Start();
+            }
+            Task.Run(async () =>
+            {
+                var newFfs = await _apiService.GetLatestAllAsync(_fbUser.ShallowCopy());
+                RefreshFeatureFlagsCollection(newFfs, _fbUser.Key);
+            });
+        }
+
         private async Task TimerElapsedAsync(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if(_timer.Interval == 1)
+            if(_timer.Interval == _timerInitTimeSpan)
             {
                 _timer.Stop();
                 _timer.Interval = _options.PoollingInterval;
@@ -63,10 +79,10 @@ namespace FeatBit.ClientSdk
                 _timer.Start();
             }
             var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
-            RefreshFeatureFlagsCollection(newFfs);
+            RefreshFeatureFlagsCollection(newFfs, _fbUser.Key);
         }
 
-        private void RefreshFeatureFlagsCollection(List<FeatureFlag> ffs)
+        private void RefreshFeatureFlagsCollection(List<FeatureFlag> ffs, string fbUserKey)
         {
             try
             {
@@ -76,13 +92,12 @@ namespace FeatBit.ClientSdk
 
                 foreach (var item in ffs)
                 {
-                    //if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) ||
-                    //    existingItem.Variation != item.Variation)
-                    //{
-                    //    changedItems.Add(item.ShallowCopy());
-                    //}
-                    changedItems.Add(item.ShallowCopy());
-                    _featureFlagsCollection.AddOrUpdate(item.Id, item.ShallowCopy(), (existingKey, existingValue) => item.ShallowCopy());
+                    if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) ||
+                        existingItem.Variation != item.Variation)
+                    {
+                        changedItems.Add(item.ShallowCopy());
+                        _featureFlagsCollection.AddOrUpdate(item.Id, item.ShallowCopy(), (existingKey, existingValue) => item.ShallowCopy());
+                    }
                 }
 
                 _logger.LogInformation($"Latest Feature Flags Retrieving Completed @ {DateTime.Now.ToString()}");
@@ -108,8 +123,14 @@ namespace FeatBit.ClientSdk
 
         public async Task StopAsync()
         {
-            _timer.Elapsed -= async (sender, e) => await TimerElapsedAsync(sender, e);
+            FeatureFlagsUpdated = null;
+            _timer.Elapsed -= TimerElapsed;
             _timer.Stop();
+        }
+
+        public async Task CloseTimerAsync()
+        {
+            await StopAsync();
             _timer.Close();
         }
     }
