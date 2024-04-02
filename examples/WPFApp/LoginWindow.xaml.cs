@@ -33,7 +33,7 @@ namespace WPFApp
             {
                 var task = Task.Run(async () =>
                 {
-                    await _fbClient.IdentifyAsync(fakeUser);
+                    await _fbClient.IdentifyAsync(fakeUser, autoSync: true);
                 }).Wait(TimeSpan.FromSeconds(10));
                 if (task == false)
                 {

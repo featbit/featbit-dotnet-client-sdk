@@ -17,7 +17,7 @@ namespace FeatBit.ClientSdk
         void StopTimer();
         List<FeatureFlag> GetLatestAll();
         void Identify(FbUser identity);
-        Task IdentifyAsync(FbUser fbUser);
+        Task IdentifyAsync(FbUser fbUser, bool autoSync = false);
         void Logout();
         void SaveToLocal(Action<Dictionary<string, FeatureFlag>> action);
         bool BoolVariation(string key, bool defaultValue = false);

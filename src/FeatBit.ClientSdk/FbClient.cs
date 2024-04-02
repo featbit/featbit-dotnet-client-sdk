@@ -80,13 +80,14 @@ namespace FeatBit.ClientSdk
             _dataSynchronizer.Identify(fbUser);
         }
 
-        public async Task IdentifyAsync(FbUser fbUser)
+        public async Task IdentifyAsync(FbUser fbUser, bool autoSync = false)
         {
             StopTimer();
             _fbUser = fbUser.ShallowCopy();
             _dataSynchronizer.Identify(fbUser);
             await _dataSynchronizer.UpdateFeatureFlagCollectionAsync();
-            StartTimer();
+            if (autoSync == true)
+                StartTimer();
         }
 
         public List<FeatureFlag> GetLatestAll()
