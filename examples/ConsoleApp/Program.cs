@@ -38,22 +38,22 @@ Console.WriteLine("Press any key to simulate user login - 002");
 Console.ReadKey();
 Console.WriteLine("Key Pressed");
 
-fbClient.StopTimer();
+fbClient.StopAutoDataSync();
 var fakeUser2 = FbUser.Builder("a-unique-key-of-fake-user-002")
                 .Name("Fake User 002")
                 .Custom("age", "18")
                 .Custom("country", "US")
                 .Build();
 fbClient.Identify(fakeUser2);
-fbClient.StartTimer();
+fbClient.StartAutoDataSync();
 
 Console.WriteLine("Press any key to simulate user login - 001");
 Console.ReadKey();
 Console.WriteLine("Key Pressed");
 
-fbClient.StopTimer();
+fbClient.StopAutoDataSync();
 fbClient.Identify(fakeUser);
-fbClient.StartTimer();
+fbClient.StartAutoDataSync();
 
 Console.ReadLine();
 

@@ -10,13 +10,11 @@ namespace FeatBit.ClientSdk
 {
     internal class PollingDataSynchronizer : IDataSynchronizer
     {
-        public bool Initialized { get; private set; }
         public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
 
         private const int _timerInitTimeSpan = 1;
         private readonly System.Timers.Timer _timer;
         private readonly FbOptions _options;
-        private readonly TaskCompletionSource<bool> _initTcs;
         private readonly ILogger<PollingDataSynchronizer> _logger;
         private readonly IFeatBitRestfulService _apiService;
         private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
@@ -29,14 +27,7 @@ namespace FeatBit.ClientSdk
             _featureFlagsCollection = featureFlagsCollection;
             _apiService = new FeatBitRestfulService(options);
             _logger = options.LoggerFactory.CreateLogger<PollingDataSynchronizer>();
-
-            // Shallow copy so we don't mutate the user-defined options object.
-            var shallowCopiedOptions = options.ShallowCopy();
-            _options = shallowCopiedOptions;
-
-            _initTcs = new TaskCompletionSource<bool>();
-            Initialized = false;
-
+            _options = options.ShallowCopy();
             _timer = new System.Timers.Timer();
         }
 
@@ -65,7 +56,7 @@ namespace FeatBit.ClientSdk
             Task.Run(async () =>
             {
                 var newFfs = await _apiService.GetLatestAllAsync(_fbUser.ShallowCopy());
-                RefreshFeatureFlagsCollection(newFfs, _fbUser.Key);
+                UpdateFeatureFlagsCollection(newFfs);
             });
         }
 
@@ -79,16 +70,16 @@ namespace FeatBit.ClientSdk
                 _timer.Start();
             }
             var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
-            RefreshFeatureFlagsCollection(newFfs, _fbUser.Key);
+            UpdateFeatureFlagsCollection(newFfs);
         }
 
         public async Task UpdateFeatureFlagCollectionAsync()
         {
             var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
-            RefreshFeatureFlagsCollection(newFfs, _fbUser.Key);
+            UpdateFeatureFlagsCollection(newFfs);
         }
 
-        private void RefreshFeatureFlagsCollection(List<FeatureFlag> ffs, string fbUserKey)
+        public void UpdateFeatureFlagsCollection(List<FeatureFlag> ffs)
         {
             try
             {

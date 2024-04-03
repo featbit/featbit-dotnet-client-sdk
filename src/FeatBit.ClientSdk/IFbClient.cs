@@ -7,19 +7,14 @@ namespace FeatBit.ClientSdk
 {
     public interface IFbClient
     {
-        /// <summary>
-        /// Indicates whether the client is ready to be used.
-        /// </summary>
-        /// <value>true if the client is ready</value>
-        bool Initialized { get; }
         event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
-        void StartTimer();
-        void StopTimer();
+        void StartAutoDataSync();
+        void StopAutoDataSync();
         List<FeatureFlag> GetLatestAll();
         void Identify(FbUser identity);
         Task IdentifyAsync(FbUser fbUser, bool autoSync = false);
         void Logout();
-        void SaveToLocal(Action<Dictionary<string, FeatureFlag>> action);
+        void InitFeatureFlagsFromLocal(List<FeatureFlag> featureFlags, bool autoSync = false);
         bool BoolVariation(string key, bool defaultValue = false);
         int IntVariation(string key, int defaultValue = 0);
         float FloatVariation(string key, float defaultValue = 0);

@@ -9,64 +9,74 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using FeatBit.ClientSdk.Models;
 
 namespace FeatBit.ClientSdk
 {
     public class FbClient : IFbClient
     {
-        public bool Initialized => _dataSynchronizer.Initialized;
         public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
 
-        //private readonly FbOptions _options;
+        private readonly FbOptions _options;
         private readonly ILogger _logger;
-        private FbUser _fbUser;
-        private FbUser _unloginUser;
+
         internal readonly IDataSynchronizer _dataSynchronizer;
+        internal readonly IInsightsAndEventSenderService _insightsAndEventSenderService;
+
         private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
-        private readonly IFeatBitRestfulService _apiService;
         private readonly ApplicationTypeEnum _appType;
+        private readonly DataSyncMethodEnum _dataSyncMethod;
+
+        private FbUser _fbUser;
+
         public FbClient(FbOptions options, FbUser fbUser = null, bool autoSync = true, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
         {
-            //_options = options;
-            _logger = options.LoggerFactory.CreateLogger<FbClient>();
+            _options = options;
+            _logger = _options.LoggerFactory.CreateLogger<FbClient>();
+            _dataSyncMethod = _options.DataSyncMethod;
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
-            _dataSynchronizer = new PollingDataSynchronizer(options, _featureFlagsCollection);
-            _apiService = new FeatBitRestfulService(options);
+            _dataSynchronizer = new PollingDataSynchronizer(_options, _featureFlagsCollection);
             _appType = applicatoinType;
+            _insightsAndEventSenderService = new InsightsAndEventSenderService(_options);
+
             GenerateDefaultUser(fbUser);
 
             if (autoSync == true)
-                StartTimer();
+                StartAutoDataSync();
         }
 
-        public void StartTimer()
+        public void StartAutoDataSync()
         {
-            Task.Run(async () => await StartDataSyncAsync());
+            if(_dataSyncMethod == DataSyncMethodEnum.Polling)
+            {
+                Task.Run(async () => {
+                    _dataSynchronizer.FeatureFlagsUpdated += DataSynchronizer_FeatureFlagsUpdated;
+                    await _dataSynchronizer.StartAsync();
+                });
+            }
         }
 
-        public void StopTimer()
+        public void StopAutoDataSync()
         {
-            _dataSynchronizer.FeatureFlagsUpdated -= DataSynchronizer_FeatureFlagsUpdated;
-            Task.Run(async () => await _dataSynchronizer.StopAsync()).Wait();
-        }
-
-        private async Task StartDataSyncAsync()
-        {
-            _dataSynchronizer.Identify(_fbUser);
-            _dataSynchronizer.FeatureFlagsUpdated += DataSynchronizer_FeatureFlagsUpdated;
-            await _dataSynchronizer.StartAsync();
+            if (_dataSyncMethod == DataSyncMethodEnum.Polling)
+            {
+                Task.Run(async () =>
+                {
+                    _dataSynchronizer.FeatureFlagsUpdated -= DataSynchronizer_FeatureFlagsUpdated;
+                    await _dataSynchronizer.StopAsync();
+                }).Wait();
+            }
         }
 
         public void GenerateDefaultUser(FbUser fbUser)
         {
             if (fbUser == null)
             {
-                var randomKey = "random-" + Guid.NewGuid().ToString();
-                _unloginUser = FbUser.Builder(randomKey)
+                var randomKey = "unlogin-" + Guid.NewGuid().ToString();
+                _fbUser = FbUser.Builder(randomKey)
                     .Name(randomKey)
                     .Custom("application-type", _appType.ToString())
                     .Build();
-                _fbUser = _unloginUser.ShallowCopy();
             }
             else
             {
@@ -82,12 +92,20 @@ namespace FeatBit.ClientSdk
 
         public async Task IdentifyAsync(FbUser fbUser, bool autoSync = false)
         {
-            StopTimer();
+            StopAutoDataSync();
             _fbUser = fbUser.ShallowCopy();
             _dataSynchronizer.Identify(fbUser);
             await _dataSynchronizer.UpdateFeatureFlagCollectionAsync();
             if (autoSync == true)
-                StartTimer();
+                StartAutoDataSync();
+        }
+
+        public void InitFeatureFlagsFromLocal(List<FeatureFlag> featureFlags, bool autoSync = false)
+        {
+            StopAutoDataSync();
+            _dataSynchronizer.UpdateFeatureFlagsCollection(featureFlags);
+            if (autoSync == true)
+                StartAutoDataSync();
         }
 
         public List<FeatureFlag> GetLatestAll()
@@ -110,14 +128,6 @@ namespace FeatBit.ClientSdk
             _fbUser = null;
         }
 
-        #region initialization methods
-        public void SaveToLocal(Action<Dictionary<string, FeatureFlag>> action)
-        {
-            var newDic = _featureFlagsCollection.ToDictionary(x => x.Key, x => x.Value.ShallowCopy());
-            action(newDic);
-        }
-        #endregion
-
 
         #region utils
         private FeatureFlag ComposeNewFeatureFlagValue(string key, string value, string type)
@@ -139,113 +149,91 @@ namespace FeatBit.ClientSdk
         #region evaluation methods
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            FeatureFlag ff = new FeatureFlag();
-            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
-            {
-                if(ff.VariationType.ToLower() == "boolean")
-                {
-                    return ff.Variation == "true";
-                }
-                else
-                {
-                    throw new Exception("Variation type is not boolean");
-                }
-            }
-            else
-            {
-                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "boolean");
-                return defaultValue;
-            }
+            return GetFeatureFlagValue<bool>(key, defaultValue, "boolean");
         }
 
         public double DoubleVariation(string key, double defaultValue = 0)
         {
-            FeatureFlag ff = new FeatureFlag();
-            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
-            {
-                if (ff.VariationType.ToLower() != "number")
-                {
-                    throw new Exception("Variation type is not Double");
-                }
-                return Convert.ToDouble(ff.Variation);
-            }
-            else
-            {
-                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "number");
-                return defaultValue;
-            }
+            return GetFeatureFlagValue<double>(key, defaultValue, "number");
         }
 
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            FeatureFlag ff = new FeatureFlag();
-            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
-            {
-                if (ff.VariationType.ToLower() != "number")
-                {
-                    throw new Exception("Variation type is not Float");
-                }
-                return float.Parse(ff.Variation.ToLower(), CultureInfo.InvariantCulture.NumberFormat);
-            }
-            else
-            {
-                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "number");
-                return defaultValue;
-            }
+            return GetFeatureFlagValue<float>(key, defaultValue, "number");
         }
 
         public T ObjectVariation<T>(string key, T defaultValue = default)
         {
-            FeatureFlag ff = new FeatureFlag();
-            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
-            {
-                if (ff.VariationType.ToLower() != "string")
-                {
-                    throw new Exception("Variation type is not Json");
-                }
-                return JsonSerializer.Deserialize<T>(ff.Variation) ?? defaultValue;
-            }
-            else
-            {
-                UpdateFeatureFlagNewValueToCollection(key, JsonSerializer.Serialize(defaultValue), "string");
-                return defaultValue;
-            }
+            return GetFeatureFlagValue<T>(key, defaultValue, "string");
         }
 
         public int IntVariation(string key, int defaultValue = 0)
         {
-            FeatureFlag ff = new FeatureFlag();
-            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
-            {
-                if (ff.VariationType.ToLower() != "number")
-                {
-                    throw new Exception("Variation type is not Number");
-                }
-                return Convert.ToInt32(ff.Variation);
-            }
-            else
-            {
-                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString().ToLower(), "number");
-                return defaultValue;
-            }
+            return GetFeatureFlagValue<int>(key, defaultValue, "number");
         }
 
         public string StringVariation(string key, string defaultValue = "")
         {
+            return GetFeatureFlagValue<string>(key, defaultValue, "string");
+        }
+
+        private T GetFeatureFlagValue<T>(string key, T defaultValue, string variationType)
+        {
+            var returnValue = defaultValue;
             FeatureFlag ff = new FeatureFlag();
-            if (_featureFlagsCollection.TryGetValue(key, out ff) == true)
+            if (_featureFlagsCollection.TryGetValue(key, out ff))
             {
-                if (ff.VariationType.ToLower() != "string")
+                if (ff.VariationType.ToLower() == variationType.ToLower())
                 {
-                    throw new Exception("Variation type is not String");
+                    returnValue = ConvertValue<T>(ff.Variation);
                 }
-                return ff.Variation;
+                else
+                {
+                    _logger.LogError($"Variation type is not {variationType}");
+                }
+            }
+            Task.Run(async () => await _insightsAndEventSenderService.TrackInsightAsync(
+                    ComposeToVariationInsight(key, returnValue), _fbUser));
+            return returnValue;
+        }
+
+        private T ConvertValue<T>(string value)
+        {
+            if (typeof(T) == typeof(bool))
+            {
+                return (T)(object)(value.ToLower() == "true");
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                return (T)(object)Convert.ToDouble(value, CultureInfo.InvariantCulture);
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                return (T)(object)float.Parse(value.ToLower(), CultureInfo.InvariantCulture);
+            }
+            else if (typeof(T) == typeof(int))
+            {
+                return (T)(object)Convert.ToInt32(value, CultureInfo.InvariantCulture);
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                return (T)(object)value;
             }
             else
             {
-                UpdateFeatureFlagNewValueToCollection(key, defaultValue.ToString(), "string");
-                return defaultValue;
+                throw new Exception($"Unsupported variation type: {typeof(T)}");
             }
+        }
+
+        private VariationInsight ComposeToVariationInsight<T>(string key, T defaultValue)
+        {
+            return new VariationInsight
+            {
+                FeatureFlagKey = key,
+                SendToExperiment = false,
+                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                Variation = new Variation(key, Convert.ToString(defaultValue, CultureInfo.InvariantCulture))
+            };
         }
 
         #endregion
@@ -274,7 +262,6 @@ namespace FeatBit.ClientSdk
             _logger.LogInformation("Closing FbClient...");
             _dataSynchronizer.FeatureFlagsUpdated -= DataSynchronizer_FeatureFlagsUpdated;
             await _dataSynchronizer.StopAsync();
-            //_eventProcessor.FlushAndClose(_options.FlushTimeout);
             _logger.LogInformation("FbClient successfully closed.");
         }
     }
