@@ -6,8 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FeatBit.ClientSdk.Models;
 
@@ -35,11 +33,13 @@ namespace FeatBit.ClientSdk
             _logger = _options.LoggerFactory.CreateLogger<FbClient>();
             _dataSyncMethod = _options.DataSyncMethod;
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
-            _dataSynchronizer = new PollingDataSynchronizer(_options, _featureFlagsCollection);
             _appType = applicatoinType;
             _insightsAndEventSenderService = new InsightsAndEventSenderService(_options);
 
             GenerateDefaultUser(fbUser);
+
+            _dataSynchronizer = new PollingDataSynchronizer(_options, _featureFlagsCollection);
+            _dataSynchronizer.Identify(_fbUser);
 
             if (autoSync == true)
                 StartAutoDataSync();
@@ -193,7 +193,7 @@ namespace FeatBit.ClientSdk
                 }
             }
             Task.Run(async () => await _insightsAndEventSenderService.TrackInsightAsync(
-                    ComposeToVariationInsight(key, returnValue), _fbUser));
+                    ComposeToVariationInsight(key, ff.VariationId, returnValue), _fbUser));
             return returnValue;
         }
 
@@ -225,14 +225,14 @@ namespace FeatBit.ClientSdk
             }
         }
 
-        private VariationInsight ComposeToVariationInsight<T>(string key, T defaultValue)
+        private VariationInsight ComposeToVariationInsight<T>(string key, string variationId, T defaultValue)
         {
             return new VariationInsight
             {
                 FeatureFlagKey = key,
                 SendToExperiment = false,
                 Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                Variation = new Variation(key, Convert.ToString(defaultValue, CultureInfo.InvariantCulture))
+                Variation = new Variation(variationId, Convert.ToString(defaultValue, CultureInfo.InvariantCulture))
             };
         }
 

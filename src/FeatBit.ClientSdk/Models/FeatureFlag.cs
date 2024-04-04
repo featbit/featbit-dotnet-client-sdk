@@ -10,6 +10,12 @@ namespace FeatBit.ClientSdk
         public string Variation { get; set; }
         [JsonPropertyName("variationType")]
         public string VariationType { get; set; }
+        
+        [JsonPropertyName("variationId")]
+        public string VariationId { get; set; }
+
+        [JsonPropertyName("sendToExperiment")]
+        public bool SendToExperiment { get; set; }
 
         public FeatureFlag()
         {
@@ -19,11 +25,15 @@ namespace FeatBit.ClientSdk
         public FeatureFlag(
             string id,
             string variation,
-            string variationType)
+            string variationType,
+            string variationId,
+            bool sendToExperiment)
         {
             Id = id;
             Variation = variation;
             VariationType = variationType;
+            VariationId = variationId;
+            SendToExperiment = sendToExperiment;
         }
 
         public FeatureFlag ShallowCopy()
