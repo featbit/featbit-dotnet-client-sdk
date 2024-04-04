@@ -199,30 +199,7 @@ namespace FeatBit.ClientSdk
 
         private T ConvertValue<T>(string value)
         {
-            if (typeof(T) == typeof(bool))
-            {
-                return (T)(object)(value.ToLower() == "true");
-            }
-            else if (typeof(T) == typeof(double))
-            {
-                return (T)(object)Convert.ToDouble(value, CultureInfo.InvariantCulture);
-            }
-            else if (typeof(T) == typeof(float))
-            {
-                return (T)(object)float.Parse(value.ToLower(), CultureInfo.InvariantCulture);
-            }
-            else if (typeof(T) == typeof(int))
-            {
-                return (T)(object)Convert.ToInt32(value, CultureInfo.InvariantCulture);
-            }
-            else if (typeof(T) == typeof(string))
-            {
-                return (T)(object)value;
-            }
-            else
-            {
-                throw new Exception($"Unsupported variation type: {typeof(T)}");
-            }
+            return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
         }
 
         private VariationInsight ComposeToVariationInsight<T>(string key, string variationId, T defaultValue)
