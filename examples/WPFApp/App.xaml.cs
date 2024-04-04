@@ -1,6 +1,7 @@
 ﻿using FeatBit.ClientSdk;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Windows;
 
 namespace WPFApp
@@ -17,6 +18,9 @@ namespace WPFApp
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
             _serviceProvider = serviceCollection.BuildServiceProvider();
+
+            //CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
+            //CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("fr-FR");
         }
 
         private void ConfigureServices(IServiceCollection services)

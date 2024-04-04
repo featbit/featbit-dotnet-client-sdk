@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using FeatBit.ClientSdk.Models;
+using Newtonsoft.Json.Linq;
+using System.Xml;
 
 namespace FeatBit.ClientSdk
 {
@@ -148,71 +150,34 @@ namespace FeatBit.ClientSdk
 
         #region evaluation methods
         public bool BoolVariation(string key, bool defaultValue = false)
-        {
-            return GetFeatureFlagValue<bool>(key, defaultValue, "boolean");
-        }
+            => GetFeatureFlagValue(key, defaultValue, ValueConverters.Bool);
 
         public double DoubleVariation(string key, double defaultValue = 0)
-        {
-            return GetFeatureFlagValue<double>(key, defaultValue, "number");
-        }
+            => GetFeatureFlagValue(key, defaultValue, ValueConverters.Double);
 
         public float FloatVariation(string key, float defaultValue = 0)
-        {
-            return GetFeatureFlagValue<float>(key, defaultValue, "number");
-        }
+            => GetFeatureFlagValue(key, defaultValue, ValueConverters.Float);
 
-        public T ObjectVariation<T>(string key, T defaultValue = default)
-        {
-            return GetFeatureFlagValue<T>(key, defaultValue, "string");
-        }
-
-        public int IntVariation(string key, int defaultValue = 0)
-        {
-            return GetFeatureFlagValue<int>(key, defaultValue, "number");
-        }
+        public int IntVariation(string key, int defaultValue = 0) 
+            => GetFeatureFlagValue(key, defaultValue, ValueConverters.Int);
 
         public string StringVariation(string key, string defaultValue = "")
-        {
-            return GetFeatureFlagValue<string>(key, defaultValue, "string");
-        }
+            => GetFeatureFlagValue(key, defaultValue, ValueConverters.String);
 
-        private T GetFeatureFlagValue<T>(string key, T defaultValue, string variationType)
+        private TValue GetFeatureFlagValue<TValue>(
+                    string key,
+                    TValue defaultValue,
+                    ValueConverter<TValue> converter)
         {
-            var returnValue = defaultValue;
-            FeatureFlag ff = new FeatureFlag();
-            if (_featureFlagsCollection.TryGetValue(key, out ff))
+            _featureFlagsCollection.TryGetValue(key, out FeatureFlag ff);
+            if (ff != null)
             {
-                if (ff.VariationType.ToLower() == variationType.ToLower())
-                {
-                    returnValue = ConvertValue<T>(ff.Variation);
-                }
-                else
-                {
-                    _logger.LogError($"Variation type is not {variationType}");
-                }
+                Task.Run(async () => await _insightsAndEventSenderService.TrackInsightAsync(new VariationInsight(ff), _fbUser));
+                var rv = converter(ff.Variation, out var typedValue) ? typedValue : defaultValue;
+                return rv;
             }
-            Task.Run(async () => await _insightsAndEventSenderService.TrackInsightAsync(
-                    ComposeToVariationInsight(key, ff.VariationId, returnValue), _fbUser));
-            return returnValue;
+            return defaultValue;
         }
-
-        private T ConvertValue<T>(string value)
-        {
-            return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
-        }
-
-        private VariationInsight ComposeToVariationInsight<T>(string key, string variationId, T defaultValue)
-        {
-            return new VariationInsight
-            {
-                FeatureFlagKey = key,
-                SendToExperiment = false,
-                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                Variation = new Variation(variationId, Convert.ToString(defaultValue, CultureInfo.InvariantCulture))
-            };
-        }
-
         #endregion
 
         public void Track(FbUser user, string eventName)
@@ -241,5 +206,22 @@ namespace FeatBit.ClientSdk
             await _dataSynchronizer.StopAsync();
             _logger.LogInformation("FbClient successfully closed.");
         }
+    }
+
+    internal delegate bool ValueConverter<TValue>(string value, out TValue converted);
+
+    internal static class ValueConverters
+    {
+        internal static readonly ValueConverter<bool> Bool = (string value, out bool converted) => bool.TryParse(value, out converted);
+        internal static readonly ValueConverter<string> String = (string value, out string converted) =>
+        {
+            converted = value;
+            return true;
+        };
+        public static readonly ValueConverter<int> Int = (string value, out int converted) => int.TryParse(value, out converted);
+        public static readonly ValueConverter<float> Float = 
+            (string value, out float converted) => float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out converted);
+        public static readonly ValueConverter<double> Double = 
+            (string value, out double converted) => double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out converted);
     }
 }

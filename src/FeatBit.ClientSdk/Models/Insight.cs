@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Hosting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -72,6 +73,14 @@ namespace FeatBit.ClientSdk.Models
         public bool SendToExperiment { get; set; }
 
         public long Timestamp { get; set; }
+
+        public VariationInsight(FeatureFlag ff)
+        {
+            FeatureFlagKey = ff.Id;
+            Variation = new Variation(ff.VariationId, ff.Variation);
+            SendToExperiment = ff.SendToExperiment;
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
 
         public VariationInsight ShallowCopy()
         {

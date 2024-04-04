@@ -54,6 +54,9 @@ namespace WPFApp
                     TextBox_Thanks.Visibility = Visibility.Hidden;
                     break;
             }
+
+            double numb = _fbClient.DoubleVariation("float-func", 0);
+            //TextBox_FloatFunc.Text = numb.ToString();
         }
     }
 }
