@@ -13,9 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{CB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPFApp", "examples\WPFApp\WPFApp.csproj", "{4FD836A5-E188-40CB-A3F4-34A6448CB143}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNet8BlazorWebAssembly.Global", "DotNet8BlazorWebAssembly.Global\DotNet8BlazorWebAssembly.Global\DotNet8BlazorWebAssembly.Global.csproj", "{EBD237D5-6504-46BA-80C7-408705932E71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNet8BlazorWebAssembly.Global", "examples\BlazorWebAssembly\DotNet8BlazorWebAssembly.Global\DotNet8BlazorWebAssembly.Global\DotNet8BlazorWebAssembly.Global.csproj", "{EBD237D5-6504-46BA-80C7-408705932E71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNet8BlazorWebAssembly.Global.Client", "DotNet8BlazorWebAssembly.Global\DotNet8BlazorWebAssembly.Global.Client\DotNet8BlazorWebAssembly.Global.Client.csproj", "{F3F922BE-EBF7-4CD1-A08B-C12AF48B3551}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNet8BlazorWebAssembly.Global.Client", "examples\BlazorWebAssembly\DotNet8BlazorWebAssembly.Global\DotNet8BlazorWebAssembly.Global.Client\DotNet8BlazorWebAssembly.Global.Client.csproj", "{F3F922BE-EBF7-4CD1-A08B-C12AF48B3551}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D81B8671-17A5-4604-A8D6-D1797A84E918}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
