@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FeatBit.ClientSdk
@@ -11,6 +12,7 @@ namespace FeatBit.ClientSdk
     internal class PollingDataSynchronizer : IDataSynchronizer
     {
         public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
+        private readonly SemaphoreSlim _syncSemaphore = new SemaphoreSlim(1, 1);
 
         private const int _timerInitTimeSpan = 1;
         private readonly System.Timers.Timer _timer;
@@ -75,8 +77,16 @@ namespace FeatBit.ClientSdk
 
         public async Task UpdateFeatureFlagCollectionAsync()
         {
-            var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
-            UpdateFeatureFlagsCollection(newFfs);
+            await _syncSemaphore.WaitAsync();
+            try
+            {
+                var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
+                UpdateFeatureFlagsCollection(newFfs);
+            }
+            finally
+            {
+                _syncSemaphore.Release();
+            }
         }
 
         public void UpdateFeatureFlagsCollection(List<FeatureFlag> ffs)

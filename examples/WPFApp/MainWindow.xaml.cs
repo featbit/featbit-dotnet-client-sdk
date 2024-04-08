@@ -1,4 +1,5 @@
 ﻿using FeatBit.ClientSdk;
+using FeatBit.ClientSdk.Events;
 using System.Net;
 using System.Text;
 using System.Windows;
@@ -26,12 +27,25 @@ namespace WPFApp
             InitializeComponent();
             _fbClient = fbClient;
             Loaded += MainWindow_Loaded;
+            Unloaded += (s, e) =>
+            {
+                _fbClient.FeatureFlagsUpdated -= FeatureFlagsUpdated;
+            };
             //this.DataContext = viewModel;    
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            _fbClient.FeatureFlagsUpdated += FeatureFlagsUpdated;
             SetVisibility();
+        }
+
+        private void FeatureFlagsUpdated(object? sender, FeatureFlagsUpdatedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new System.Action(() =>
+            {
+                SetVisibility();
+            }));
         }
 
         private void Button_Refresh_Click(object sender, RoutedEventArgs e)
@@ -56,7 +70,8 @@ namespace WPFApp
             }
 
             double numb = _fbClient.DoubleVariation("float-func", 0);
-            //TextBox_FloatFunc.Text = numb.ToString();
         }
+
+
     }
 }

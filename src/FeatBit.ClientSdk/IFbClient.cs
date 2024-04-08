@@ -12,18 +12,16 @@ namespace FeatBit.ClientSdk
         void StopAutoDataSync();
         List<FeatureFlag> GetLatestAll();
         void Identify(FbUser identity);
-        Task IdentifyAsync(FbUser fbUser, bool autoSync = false);
+        Task IdentifyAsync(FbUser fbUser);
+        Task UpdateToLatestAsync();
         void Logout();
-        void InitFeatureFlagsFromLocal(List<FeatureFlag> featureFlags, bool autoSync = false);
+        void InitFeatureFlagsFromLocal(List<FeatureFlag> featureFlags);
         bool BoolVariation(string key, bool defaultValue = false);
         int IntVariation(string key, int defaultValue = 0);
         float FloatVariation(string key, float defaultValue = 0);
         double DoubleVariation(string key, double defaultValue = 0);
         string StringVariation(string key, string defaultValue = "");
-        void Track(FbUser user, string eventName);
-        void Track(FbUser user, string eventName, double metricValue);
-        void Flush();
-        bool FlushAndWait(TimeSpan timeout);
-        Task CloseAsync();
+        void Dispose();
+        Task DisposeAsync();
     }
 }

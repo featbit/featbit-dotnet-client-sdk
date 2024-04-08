@@ -16,7 +16,7 @@ var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-001")
                 .Custom("age", "15")
                 .Custom("country", "FR")
                 .Build();
-var fbClient = new FbClient(options, fbUser: fakeUser, autoSync: true);
+var fbClient = new FbClient(options, fbUser: fakeUser);
 
 fbClient.FeatureFlagsUpdated += (sender, e) =>
 {
@@ -38,22 +38,18 @@ Console.WriteLine("Press any key to simulate user login - 002");
 Console.ReadKey();
 Console.WriteLine("Key Pressed");
 
-fbClient.StopAutoDataSync();
 var fakeUser2 = FbUser.Builder("a-unique-key-of-fake-user-002")
                 .Name("Fake User 002")
                 .Custom("age", "18")
                 .Custom("country", "US")
                 .Build();
-fbClient.Identify(fakeUser2);
-fbClient.StartAutoDataSync();
+fbClient.IdentifyAsync(fakeUser2).Wait();
 
 Console.WriteLine("Press any key to simulate user login - 001");
 Console.ReadKey();
 Console.WriteLine("Key Pressed");
 
-fbClient.StopAutoDataSync();
-fbClient.Identify(fakeUser);
-fbClient.StartAutoDataSync();
+fbClient.Identify(fakeUser).Wait();
 
 Console.ReadLine();
 

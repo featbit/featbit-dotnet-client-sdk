@@ -23,17 +23,17 @@ namespace WPFApp
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-003")
-                            .Name("Fake User 003")
-                            .Custom("age", "15")
-                            .Custom("country", "FR")
-                            .Build();
 
             try
             {
                 var task = Task.Run(async () =>
                 {
-                    await _fbClient.IdentifyAsync(fakeUser, autoSync: true);
+                    var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-003")
+                                    .Name("Fake User 003")
+                                    .Custom("age", "15")
+                                    .Custom("country", "FR")
+                                    .Build();
+                    await _fbClient.IdentifyAsync(fakeUser);
                 }).Wait(TimeSpan.FromSeconds(10));
                 if (task == false)
                 {

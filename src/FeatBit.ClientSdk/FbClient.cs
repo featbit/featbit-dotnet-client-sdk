@@ -92,22 +92,21 @@ namespace FeatBit.ClientSdk
             _dataSynchronizer.Identify(fbUser);
         }
 
-        public async Task IdentifyAsync(FbUser fbUser, bool autoSync = false)
+        public async Task IdentifyAsync(FbUser fbUser)
         {
-            StopAutoDataSync();
             _fbUser = fbUser.ShallowCopy();
             _dataSynchronizer.Identify(fbUser);
             await _dataSynchronizer.UpdateFeatureFlagCollectionAsync();
-            if (autoSync == true)
-                StartAutoDataSync();
         }
 
-        public void InitFeatureFlagsFromLocal(List<FeatureFlag> featureFlags, bool autoSync = false)
+        public async Task UpdateToLatestAsync()
         {
-            StopAutoDataSync();
+            await _dataSynchronizer.UpdateFeatureFlagCollectionAsync();
+        }
+
+        public void InitFeatureFlagsFromLocal(List<FeatureFlag> featureFlags)
+        {
             _dataSynchronizer.UpdateFeatureFlagsCollection(featureFlags);
-            if (autoSync == true)
-                StartAutoDataSync();
         }
 
         public List<FeatureFlag> GetLatestAll()
@@ -141,11 +140,6 @@ namespace FeatBit.ClientSdk
                 VariationType = type
             };
         }   
-        private void UpdateFeatureFlagNewValueToCollection(string key, string value, string type)
-        {
-            var ffNewValue = ComposeNewFeatureFlagValue(key, value, type);
-            _featureFlagsCollection.AddOrUpdate(key, ffNewValue, (existingKey, existingValue) => ffNewValue);
-        }
         #endregion
 
         #region evaluation methods
@@ -180,26 +174,11 @@ namespace FeatBit.ClientSdk
         }
         #endregion
 
-        public void Track(FbUser user, string eventName)
+        public void Dispose()
         {
-            throw new NotImplementedException();
+            Task.Run(DisposeAsync).Wait();
         }
-
-        public void Track(FbUser user, string eventName, double metricValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Flush()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool FlushAndWait(TimeSpan timeout)
-        {
-            throw new NotImplementedException();
-        }
-        public async Task CloseAsync()
+        public async Task DisposeAsync()
         {
             _logger.LogInformation("Closing FbClient...");
             _dataSynchronizer.FeatureFlagsUpdated -= DataSynchronizer_FeatureFlagsUpdated;

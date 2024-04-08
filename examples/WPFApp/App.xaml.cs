@@ -32,9 +32,9 @@ namespace WPFApp
             var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
                                 .Eval(new Uri("https://featbit-tio-eval.zeabur.app"))
                                 .LoggerFactory(consoleLoggerFactory)
-                                .PollingInterval(5000)
+                                .PollingInterval(10000)
                                 .Build();
-            services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: false));
+            services.AddSingleton<IFbClient>(provider => new FbClient(options));
             services.AddTransient<MainViewModel>();
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginWindow>();
