@@ -75,11 +75,12 @@ namespace FeatBit.ClientSdk
             UpdateFeatureFlagsCollection(newFfs);
         }
 
-        public async Task UpdateFeatureFlagCollectionAsync()
+        public async Task UpdateFeatureFlagCollectionAsync(FbUser newFbUser = null)
         {
             await _syncSemaphore.WaitAsync();
             try
             {
+                _fbUser = newFbUser ?? _fbUser;
                 var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
                 UpdateFeatureFlagsCollection(newFfs);
             }

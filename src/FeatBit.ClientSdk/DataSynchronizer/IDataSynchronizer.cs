@@ -15,7 +15,7 @@ namespace FeatBit.ClientSdk
 
         Task StopAsync();
 
-        Task UpdateFeatureFlagCollectionAsync();
+        Task UpdateFeatureFlagCollectionAsync(FbUser newFbUser = null);
         void UpdateFeatureFlagsCollection(List<FeatureFlag> ffs);
     }
 }

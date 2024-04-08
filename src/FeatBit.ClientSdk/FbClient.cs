@@ -95,8 +95,7 @@ namespace FeatBit.ClientSdk
         public async Task IdentifyAsync(FbUser fbUser)
         {
             _fbUser = fbUser.ShallowCopy();
-            _dataSynchronizer.Identify(fbUser);
-            await _dataSynchronizer.UpdateFeatureFlagCollectionAsync();
+            await _dataSynchronizer.UpdateFeatureFlagCollectionAsync(fbUser.ShallowCopy());
         }
 
         public async Task UpdateToLatestAsync()

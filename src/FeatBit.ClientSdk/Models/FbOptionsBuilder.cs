@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace FeatBit.ClientSdk
 {
