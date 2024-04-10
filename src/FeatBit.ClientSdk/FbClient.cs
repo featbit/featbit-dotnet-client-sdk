@@ -1,5 +1,5 @@
 ﻿using FeatBit.ClientSdk.Enums;
-using FeatBit.ClientSdk.Events;
+using FeatBit.ClientSdk.Models;
 using FeatBit.ClientSdk.Services;
 using Microsoft.Extensions.Logging;
 using System;
@@ -7,9 +7,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Models;
-using Newtonsoft.Json.Linq;
-using System.Xml;
 
 namespace FeatBit.ClientSdk
 {

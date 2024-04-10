@@ -1,5 +1,4 @@
-﻿using FeatBit.ClientSdk.Events;
-using FeatBit.ClientSdk.Services;
+﻿using FeatBit.ClientSdk.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -57,22 +56,8 @@ namespace FeatBit.ClientSdk
             }
             Task.Run(async () =>
             {
-                var newFfs = await _apiService.GetLatestAllAsync(_fbUser.ShallowCopy());
-                UpdateFeatureFlagsCollection(newFfs);
+                await UpdateFeatureFlagCollectionAsync(_fbUser.ShallowCopy());
             });
-        }
-
-        private async Task TimerElapsedAsync(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if(_timer.Interval == _timerInitTimeSpan)
-            {
-                _timer.Stop();
-                _timer.Interval = _options.PoollingInterval;
-                _timer.AutoReset = true;
-                _timer.Start();
-            }
-            var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
-            UpdateFeatureFlagsCollection(newFfs);
         }
 
         public async Task UpdateFeatureFlagCollectionAsync(FbUser newFbUser = null)

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FeatBit.ClientSdk.Enums;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace FeatBit.ClientSdk
         private int _maxEventPerRequest;
         private int _maxSendEventAttempts;
         private TimeSpan _sendEventRetryInterval;
+        private DataSyncMethodEnum _dataSyncMethod;
         private long _poollingInterval;
 
         private ILoggerFactory _loggerFactory;
@@ -53,12 +55,13 @@ namespace FeatBit.ClientSdk
         {
             return new FbOptions(_offline, _envSecret, _evalUri, _maxFlushWorker, _autoFlushInterval,
                 _flushTimeout, _maxEventsInQueue, _maxEventPerRequest, _maxSendEventAttempts, _sendEventRetryInterval,
-                _loggerFactory, _poollingInterval);
+                _loggerFactory, _dataSyncMethod, _poollingInterval);
         }
 
-        public FbOptionsBuilder PollingInterval(long interval)
+        public FbOptionsBuilder DataSyncMethod(DataSyncMethodEnum dataSyncMethod, long pollingInterval = 0)
         {
-            _poollingInterval = interval;
+            _dataSyncMethod = dataSyncMethod;
+            _poollingInterval = pollingInterval;
             return this;
         }
 

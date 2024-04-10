@@ -10,43 +10,34 @@ namespace WPFApp
     public partial class LoginWindow : Window
     {
         private readonly IFbClient _fbClient;
-        private readonly MainWindow _mainModel;
+        private readonly MainWindow _mainWindow;
 
         public LoginWindow(
             MainWindow mainWindow,
             IFbClient fbClient)
         {
             InitializeComponent();
-            _mainModel = mainWindow;
             _fbClient = fbClient;
+            _mainWindow = mainWindow;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
-
-            try
+            if (string.IsNullOrWhiteSpace(TextBox_UserName.Text))
             {
-                var task = Task.Run(async () =>
-                {
-                    var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-003")
-                                    .Name("Fake User 003")
-                                    .Custom("age", "15")
-                                    .Custom("country", "FR")
-                                    .Build();
-                    await _fbClient.IdentifyAsync(fakeUser);
-                }).Wait(TimeSpan.FromSeconds(10));
-                if (task == false)
-                {
-                    MessageBox.Show("Failed to identify user. Please try again.");
-                    return;
-                }
-                _mainModel.Show();
-                this.Close();
+                MessageBox.Show("Please enter a valid user name.");
+                return;
             }
-            catch(Exception exp)
-            {
+            var userName = TextBox_UserName.Text;
 
-            }
+            var user = FbUser.Builder(userName.Trim().Replace(" ", ""))
+                                .Name(userName)
+                                .Build();
+            await _fbClient.IdentifyAsync(user);
+
+            _mainWindow.Show();
+    
+            this.Close();
         }
     }
 }

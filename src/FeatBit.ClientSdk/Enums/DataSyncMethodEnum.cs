@@ -1,4 +1,4 @@
-﻿namespace FeatBit.ClientSdk.Enums
+﻿namespace FeatBit.ClientSdk
 {
     public enum DataSyncMethodEnum
     {

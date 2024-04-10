@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FeatBit.ClientSdk.Events
+namespace FeatBit.ClientSdk
 {
     public class FeatureFlagsUpdatedEventArgs : EventArgs
     {

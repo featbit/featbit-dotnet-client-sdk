@@ -102,6 +102,7 @@ namespace FeatBit.ClientSdk
             int maxSendEventAttempts,
             TimeSpan sendEventRetryInterval,
             ILoggerFactory loggerFactory,
+            DataSyncMethodEnum dataSyncMethod,
             long pollingInterval)
         {
             Offline = offline;
@@ -117,9 +118,9 @@ namespace FeatBit.ClientSdk
             MaxSendEventAttempts = maxSendEventAttempts;
             SendEventRetryInterval = sendEventRetryInterval;
 
-            if(pollingInterval > 0)
+            DataSyncMethod = dataSyncMethod;
+            if (DataSyncMethod == DataSyncMethodEnum.Polling)
             {
-                DataSyncMethod = DataSyncMethodEnum.Polling;
                 PoollingInterval = pollingInterval;
             }
 
@@ -131,7 +132,7 @@ namespace FeatBit.ClientSdk
             var newOptions = new FbOptions(Offline, EnvSecret, EvalUri, 
                 MaxFlushWorker, AutoFlushInterval, FlushTimeout,
                 MaxEventsInQueue, MaxEventPerRequest, MaxSendEventAttempts, SendEventRetryInterval,
-                LoggerFactory, PoollingInterval);
+                LoggerFactory, DataSyncMethod, PoollingInterval);
 
             return newOptions;
         }

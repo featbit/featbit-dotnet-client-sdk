@@ -51,7 +51,7 @@ namespace FeatBit.ClientSdk.Services
 
                     if (response.IsSuccessStatusCode)
                     {
-                        Console.WriteLine("Response received successfully:");
+                        _logger.LogInformation("Response received successfully:");
                         var responseContent = await response.Content.ReadAsStringAsync();
                         return JsonSerializer.Deserialize<List<FeatureFlag>>(responseContent) ?? new List<FeatureFlag>();
                     }
@@ -63,7 +63,7 @@ namespace FeatBit.ClientSdk.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to retrieve feature flags from api client/latest-all");
-                    throw ex;
+                    return new List<FeatureFlag>();
                 }
             }
         }

@@ -15,10 +15,23 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBox Grid.Row="0" Text="{Binding SomeProperty}" />
-        <Button Grid.Row="1" Height="30" Click="Button_Refresh_Click" Content="Refresh FeatBit feature flags" />
+        <Grid Grid.Row="0">
+            <TextBlock
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Visibility="{Binding WelcomeTextVisibility}" 
+                    Text="{Binding WelcomeText}" />
+        </Grid>
+        <Button Grid.Row="1" Height="30" 
+                VerticalAlignment="Center"
+                Command="{Binding GetLatestFeatureFlagsValuesCommand}"
+                Content="Refresh FeatBit feature flags" />
+        <!--Click="Button_Refresh_Click"-->
         <Grid Grid.Row="2">
-            <TextBlock x:Name="TextBox_Thanks" Text="Thanks for using FeatBit" />
+            <TextBlock 
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    x:Name="TextBox_Thanks" Text="Thanks for using FeatBit" />
         </Grid>
     </Grid>
 </Window>

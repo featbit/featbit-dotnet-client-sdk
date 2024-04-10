@@ -1,6 +1,7 @@
 ﻿using FeatBit.ClientSdk;
 using System.ComponentModel;
 using System.Net;
+using System.Windows;
 using System.Windows.Input;
 
 namespace WPFApp
@@ -12,8 +13,20 @@ namespace WPFApp
         public MainViewModel(IFbClient fbClient)
         {
             _fbClient = fbClient;
+            _fbClient.FeatureFlagsUpdated += FeatureFlagsUpdated;
+            SetVisibilities();
 
-            MyCommand = new RelayCommand(ExecuteMyCommand, CanExecuteMyCommand);
+            GetLatestFeatureFlagsValuesCommand = new RelayCommand(GetLatestFeatureFlagsValues, CanExecuteGetLatestFeatureFlagsValues);
+        }
+
+        private void FeatureFlagsUpdated(object? sender, FeatureFlagsUpdatedEventArgs e)
+        {
+            SetVisibilities();
+        }
+
+        private void SetVisibilities()
+        {
+            WelcomeTextVisibility = _fbClient.StringVariation("welcome-text-visibility", "Collapsed");
         }
 
         #region Implement INotifyPropertyChanged
@@ -25,28 +38,41 @@ namespace WPFApp
         #endregion
 
         #region Properties
-        private string _someProperty;
-        public string SomeProperty
+        private string _welcomeText = "Welcome!";
+        public string WelcomeText
         {
-            get => _someProperty;
+            get => _welcomeText;
             set
             {
-                _someProperty = value;
-                OnPropertyChanged(nameof(SomeProperty));
+                _welcomeText = value;
+                OnPropertyChanged(nameof(WelcomeText));
+            }
+        }
+
+        private string _welcomeTextVisibility;
+        public string WelcomeTextVisibility
+        {
+            get => _welcomeTextVisibility;
+            set
+            {
+                _welcomeTextVisibility = value;
+                OnPropertyChanged(nameof(WelcomeTextVisibility));
             }
         }
         #endregion
 
+
         #region Commands
-        // MyCommand
-        public ICommand MyCommand { get; }
-        private bool CanExecuteMyCommand()
+
+        public ICommand GetLatestFeatureFlagsValuesCommand { get; }
+        private bool CanExecuteGetLatestFeatureFlagsValues()
         {
             return true;
         }
-        private void ExecuteMyCommand()
+        private async void GetLatestFeatureFlagsValues()
         {
-            SomeProperty = $"Random Generate Guid {Guid.NewGuid().ToString()}";
+            await _fbClient.UpdateToLatestAsync();
+            SetVisibilities();
         }
         #endregion
     }
