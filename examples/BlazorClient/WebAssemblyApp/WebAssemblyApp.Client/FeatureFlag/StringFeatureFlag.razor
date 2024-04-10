@@ -1,6 +1,6 @@
 ﻿@inject IFbClient _fbClient;
 
-@if (_fbClient.StringVariation(FlagKey, DefaultValue) == EnableValue)
+@if (IsVisible)
 {
     @ChildContent
 }
@@ -15,6 +15,8 @@
     [Parameter]
     public string DefaultValue { get; set; }
 
+    public bool IsVisible { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -22,5 +24,58 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        _fbClient.FeatureFlagsUpdated += FeatureFlagsUpdatedCallback;
+        SetVisibility();
     }
+
+    private void FeatureFlagsUpdatedCallback(object? sender, FeatureFlagsUpdatedEventArgs e)
+    {
+        if (e.UpdatedFeatureFlags.Any(p=>p.Id == FlagKey))
+        {
+            var newVariation = _fbClient.StringVariation(FlagKey, DefaultValue);
+            if(newVariation == EnableValue)
+            {
+                InvokeAsync(() =>
+                {
+                    IsVisible = true;
+                    StateHasChanged();
+                }).Wait();
+            }
+            else
+            {
+                InvokeAsync(() =>
+                {
+                    IsVisible = false;
+                    StateHasChanged();
+                }).Wait();
+            }
+        }
+    }
+
+    private void SetVisibility()
+    {
+        var newVariation = _fbClient.StringVariation(FlagKey, DefaultValue);
+        if(newVariation == EnableValue)
+        {
+            InvokeAsync(() =>
+            {
+                IsVisible = true;
+                StateHasChanged();
+            }).Wait();
+        }
+        else
+        {
+            InvokeAsync(() =>
+            {
+                IsVisible = false;
+                StateHasChanged();
+            }).Wait();
+        }
+    }
+
+    public void Dispose()
+    {
+        _fbClient.FeatureFlagsUpdated -= FeatureFlagsUpdatedCallback;
+    }
+       
 }

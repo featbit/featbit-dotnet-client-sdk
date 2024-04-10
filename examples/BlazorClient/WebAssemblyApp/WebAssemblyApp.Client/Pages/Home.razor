@@ -5,41 +5,12 @@
 
 <h1>Hello, world!</h1>
 
-@if (IsWelcomeTextVisible)
-{
+<StringFeatureFlag FlagKey="welcome-text-visibility" EnableValue="Visible" >
     <p>Welcome to your new app.</p>
-}
-
+</StringFeatureFlag>
 
 @code {
-
-    private bool IsWelcomeTextVisible = false;
-
     protected override async Task OnInitializedAsync()
     {
-        _fbClient.FeatureFlagsUpdated += FeatureFlagsUpdatedCallback;
-        SetWelcomeVisibility();
-    }
-
-    private void FeatureFlagsUpdatedCallback(object? sender, FeatureFlagsUpdatedEventArgs e)
-    {
-        if (e.UpdatedFeatureFlags.Any(p => p.Id == "welcome-text-visibility"))
-        {
-            InvokeAsync(() =>
-            {
-                SetWelcomeVisibility();
-            }).Wait();
-        }
-    }
-
-    private void SetWelcomeVisibility()
-    {
-        IsWelcomeTextVisible = _fbClient.StringVariation("welcome-text-visibility", "Collapsed") == "Visible";
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        _fbClient.FeatureFlagsUpdated -= FeatureFlagsUpdatedCallback;
     }
 }
