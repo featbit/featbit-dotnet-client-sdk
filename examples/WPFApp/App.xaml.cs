@@ -45,9 +45,6 @@ namespace WPFApp
         {
             base.OnStartup(e);
 
-            //var mainWindow = _serviceProvider.GetService<MainWindow>();
-            //mainWindow.Show();
-
             var loginWindow = _serviceProvider.GetService<LoginWindow>();
             loginWindow.Show();
         }
