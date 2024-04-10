@@ -4,23 +4,20 @@ using Microsoft.Extensions.Logging;
 
 Console.WriteLine("Hello, World!");
 
-
-var consoleLoggerFactory = LoggerFactory.Create(x => x.AddConsole());
+var consoleLoggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+});
 var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
                     .Eval(new Uri("https://featbit-tio-eval.zeabur.app"))
                     .LoggerFactory(consoleLoggerFactory)
-                    .PollingInterval(5000)
+                    .DataSyncMethod(DataSyncMethodEnum.Polling, 10000)
                     .Build();
-var fakeUser = FbUser.Builder("a-unique-key-of-fake-user-001")
-                .Name("Fake User 001")
-                .Custom("age", "15")
-                .Custom("country", "FR")
-                .Build();
-var fbClient = new FbClient(options, fbUser: fakeUser);
+var fbClient = new FbClient(options);
 
-fbClient.FeatureFlagsUpdated += (sender, e) =>
+fbClient.FeatureFlagsUpdated += (object? sender, FeatureFlagsUpdatedEventArgs e) =>
 {
-    if(e.UpdatedFeatureFlags.Count > 0)
+    if (e.UpdatedFeatureFlags.Count > 0)
     {
         Console.WriteLine("Feature flags updated:");
         foreach (var ff in e.UpdatedFeatureFlags)
@@ -34,24 +31,33 @@ fbClient.FeatureFlagsUpdated += (sender, e) =>
     }
 };
 
-Console.WriteLine("Press any key to simulate user login - 002");
+Console.WriteLine("Input a user name:");
+var userName = Console.ReadLine() ?? "uknown";
+var user = FbUser.Builder($"key-{userName.Trim().Replace(" ", "-")}")
+                     .Name(userName)
+                     .Custom("custom property", "custom value")
+                     .Build();
+await fbClient.IdentifyAsync(user);
+
+Console.WriteLine("Press any key to run multi-thread tasks");
 Console.ReadKey();
-Console.WriteLine("Key Pressed");
 
-var fakeUser2 = FbUser.Builder("a-unique-key-of-fake-user-002")
-                .Name("Fake User 002")
-                .Custom("age", "18")
-                .Custom("country", "US")
-                .Build();
-fbClient.IdentifyAsync(fakeUser2).Wait();
+Task[] tasks = new Task[5];
+for (int i = 0; i < tasks.Length; i++)
+{
+    tasks[i] = Task.Run(() =>
+    {
+        fbClient.StringVariation("welcome-text-visibility", "Collapsed");
+        fbClient.FeatureFlagsUpdated += (object? sender, FeatureFlagsUpdatedEventArgs e) =>
+        {
+            Console.WriteLine($"{e.UpdatedFeatureFlags.Count} Feature flags updated in task {i}:");
+        };
+        Thread.Sleep(10000);
+    });
+}
+await Task.WhenAll(tasks);
 
-Console.WriteLine("Press any key to simulate user login - 001");
 Console.ReadKey();
-Console.WriteLine("Key Pressed");
 
-fbClient.Identify(fakeUser).Wait();
-
-Console.ReadLine();
-
-await fbClient.CloseAsync();
+await fbClient.DisposeAsync();
 
