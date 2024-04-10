@@ -15,7 +15,7 @@ namespace FeatBit.ClientSdk
         public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
 
         private readonly FbOptions _options;
-        private readonly ILogger _logger;
+        private ILogger _logger;
 
         internal readonly IDataSynchronizer _dataSynchronizer;
         internal readonly IInsightsAndEventSenderService _insightsAndEventSenderService;
@@ -29,7 +29,8 @@ namespace FeatBit.ClientSdk
         public FbClient(FbOptions options, FbUser fbUser = null, bool autoSync = true, ApplicationTypeEnum applicatoinType = ApplicationTypeEnum.Standard)
         {
             _options = options;
-            _logger = _options.LoggerFactory.CreateLogger<FbClient>();
+            if (_options.LoggerFactory != null)
+                _logger = _options.LoggerFactory.CreateLogger<FbClient>();
             _dataSyncMethod = _options.DataSyncMethod;
             _featureFlagsCollection = new ConcurrentDictionary<string, FeatureFlag>();
             _appType = applicatoinType;
@@ -41,10 +42,15 @@ namespace FeatBit.ClientSdk
             _dataSynchronizer.Identify(_fbUser);
 
             if (autoSync == true)
-                StartAutoDataSync();
+                StartAutoData();
         }
 
-        public void StartAutoDataSync()
+        public void InitLoggerForWebAssembly(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<FbClient>();
+        }
+
+        public void StartAutoData()
         {
             if(_dataSyncMethod == DataSyncMethodEnum.Polling)
             {
@@ -55,7 +61,7 @@ namespace FeatBit.ClientSdk
             }
         }
 
-        public void StopAutoDataSync()
+        public void StopAutoData()
         {
             if (_dataSyncMethod == DataSyncMethodEnum.Polling)
             {
@@ -181,6 +187,7 @@ namespace FeatBit.ClientSdk
             await _dataSynchronizer.StopAsync();
             _logger.LogInformation("FbClient successfully closed.");
         }
+
     }
 
     internal delegate bool ValueConverter<TValue>(string value, out TValue converted);

@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FeatBit.ClientSdk.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace FeatBit.ClientSdk
 {
     public interface IFbClient
     {
         event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
-        void StartAutoDataSync();
-        void StopAutoDataSync();
+        void InitLoggerForWebAssembly(ILoggerFactory loggerFactory);
+        void StartAutoData();
+        void StopAutoData();
         List<FeatureFlag> GetLatestAll();
         void Identify(FbUser identity);
         Task IdentifyAsync(FbUser fbUser);

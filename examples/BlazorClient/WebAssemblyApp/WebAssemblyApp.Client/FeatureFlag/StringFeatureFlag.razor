@@ -1,0 +1,26 @@
+﻿@inject IFbClient _fbClient;
+
+@if (_fbClient.StringVariation(FlagKey, DefaultValue) == EnableValue)
+{
+    @ChildContent
+}
+
+
+@code {
+
+    [Parameter]
+    public string FlagKey { get; set; }
+    [Parameter]
+    public string EnableValue { get; set; }
+    [Parameter]
+    public string DefaultValue { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+}

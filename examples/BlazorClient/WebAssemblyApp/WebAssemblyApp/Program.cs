@@ -1,0 +1,40 @@
+using WebAssemblyApp.Client.Pages;
+using WebAssemblyApp.Components;
+using FeatBit.ClientSdk;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveWebAssemblyComponents();
+
+//var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
+//                    .Eval(new Uri("https://featbit-tio-eval.zeabur.app"))
+//                    .DataSyncMethod(DataSyncMethodEnum.Polling, 100000)
+//                    .Build();
+//builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: false));
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(WebAssemblyApp.Client._Imports).Assembly);
+
+app.Run();
