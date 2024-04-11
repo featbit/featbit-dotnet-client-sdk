@@ -1,4 +1,4 @@
-﻿namespace MauiApp
+﻿namespace DotNet8MauiApp
 {
     public partial class App : Application
     {
