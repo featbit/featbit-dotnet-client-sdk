@@ -55,7 +55,6 @@ fbClient.FeatureFlagsUpdated += (object? sender, FeatureFlagsUpdatedEventArgs e)
 {
     if (e.UpdatedFeatureFlags.Count > 0)
     {
-        Console.WriteLine("Feature flags updated:");
         foreach (var ff in e.UpdatedFeatureFlags)
         {
             // ff.Id is the feature flag key
@@ -63,38 +62,20 @@ fbClient.FeatureFlagsUpdated += (object? sender, FeatureFlagsUpdatedEventArgs e)
             Console.WriteLine($"{ff.Id}: {ff.Variation}"); 
         }
     }
-    else
-    {
-        Console.WriteLine("No feature flags updated.");
-    }
 };
 
-// After login or user identification, call IdentifyAsync to update the user information and retrieve the latest feature flags evalution result for this user.
+// After login or user identification, call IdentifyAsync to update the user information 
+// and retrieve the latest feature flags evalution result for this user.
 var user = FbUser.Builder("<a-unique-key-of-user>")
                  .Name("<name-of-user>")
                  .Custom("<custom-property-1>", "<custom-value>")
                  .Custom("<custom-property-2>", "<custom-value>")
                  .Build();
 await fbClient.IdentifyAsync(user);
-// or use synchronous method. This will update user information but will not retrieve the latest feature flags evaluation result immediately.
-// fbClient.Identify(user);
 
 // evaluate a boolean flag for a the user
 var boolVariation = client.BoolVariation("<feature-flag-key>", defaultValue: false);
 Console.WriteLine($"flag '{flagKey}' returns {boolVariation} for user {user.Key}");
-
-// initialize the SDK with a custom data source
-fbClient.InitFeatureFlagsFromLocal(new List<FeatureFlag>() {  
-    // you can init a collection from local file or other data source
-});
-
-// manually sync data to keep the data up-to-date
-await fbClient.UpdateToLatestAsync();
-
-// stop the auto data sync in polling mode
-fbClient.StopAutoData();
-// restart the auto data sync in polling mode
-fbClient.StartAutoData();
 
 // dispose the client
 await fbClient.DisposeAsync();
