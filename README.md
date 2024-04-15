@@ -102,3 +102,7 @@ await fbClient.DisposeAsync();
 
 ### Examples
 
+- [Asp.Net Core Blazor WebAssembly](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/BlazorClient/WebAssemblyApp)
+- [Console APP](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/ConsoleApp)
+- [.NET MAUI](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/DotNet8MauiApp)
+- [WPF](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/WPFApp)
