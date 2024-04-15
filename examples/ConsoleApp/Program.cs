@@ -13,7 +13,7 @@ var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA
                     .LoggerFactory(consoleLoggerFactory)
                     .DataSyncMethod(DataSyncMethodEnum.Polling, 10000)
                     .Build();
-var fbClient = new FbClient(options);
+var fbClient = new FbClient(options, autoSync: true);
 
 fbClient.FeatureFlagsUpdated += (object? sender, FeatureFlagsUpdatedEventArgs e) =>
 {
