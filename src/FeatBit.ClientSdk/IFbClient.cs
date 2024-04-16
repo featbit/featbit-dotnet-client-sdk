@@ -25,7 +25,7 @@ namespace FeatBit.ClientSdk
         string StringVariation(string key, string defaultValue = "", bool trackInsight = true);
         void Track(FbUser user, string eventName);
         void Track(FbUser user, string eventName, double metricValue);
-        void Dispose();
-        Task DisposeAsync();
+        void Close();
+        Task CloseAsync();
     }
 }

@@ -11,6 +11,7 @@ var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA
                     .LoggerFactory(NullLoggerFactory.Instance)
                     .DataSyncMethod(DataSyncMethodEnum.Polling, 5000)
                     .Build();
-builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: true));
+var fbClient = new FbClient(options, autoSync: true);
+builder.Services.AddSingleton<IFbClient>(fbClient);
 
 await builder.Build().RunAsync();

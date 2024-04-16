@@ -184,11 +184,11 @@ namespace FeatBit.ClientSdk
         {
         }
 
-        public void Dispose()
+        public void Close()
         {
-            Task.Run(DisposeAsync).Wait();
+            Task.Run(CloseAsync).Wait();
         }
-        public async Task DisposeAsync()
+        public async Task CloseAsync()
         {
             _logger.LogInformation("Closing FbClient...");
             _dataSynchronizer.FeatureFlagsUpdated -= DataSynchronizer_FeatureFlagsUpdated;

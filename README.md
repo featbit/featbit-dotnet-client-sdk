@@ -5,20 +5,22 @@
 
 ## Introduction
 
-This is the .NET Client-Side SDK for the 100% open-source feature flags management platform FeatBit.
+This is the .NET Client-Side SDK for the 100% open-source feature flags management platform [FeatBit](https://github.com/featbit/featbit).
 
-The FeatBit Client-Side SDK for .NET is designed primarily for use in single-user application such as web, mobile, or desktop applications. It is a lightweight SDK that the evaluation of feature flags is done on the remote server or local pre-configured file.
+The FeatBit Client-Side SDK for .NET is designed primarily for use in single-user application such as web, mobile, or desktop applications. It's not suitable for server-side applications.
 
-## Data Synchronization
+<!-- ## Data Synchronization
 
-Currently, the client side SDK uses polling mode to synchronize data with the FeatBit server. You can set the interval of the polling when initializing the SDK. SDK provides also a method to manually synchronize data to keep the data up-to-date in custom scenarios.
+Currently, the client-side SDK uses polling mode to synchronize data with the FeatBit server. You can set the polling interval when initializing the SDK. The SDK also provides a method to manually synchronize data to keep the data up to date in custom scenarios.
 
-You can use your own data source to initialize the SDK.
+You can load feature flags from a local file. You can also export the latest flags values to your local file and use it as the data source when initializing the SDK. This feature is useful when:
 
+- You want to use the SDK in offline mode, especially when a desktop application is running without an internet connection.
+- You want to bootstrap the SDK with saved feature flags data to reduce the time to get the latest feature flags evaluation result. -->
 
 ## Getting Started
 
-This section will only introduce the basic usage of the SDK. For more detailed use case for mobile, web and desktop applications, please refer to the next sections.
+This section will only introduce the basic usage of the SDK. For more detailed use case for mobile, web and desktop applications, please refer to the [Examples](#examples) sections.
 
 ### Installation
 
@@ -56,14 +58,11 @@ var fbClient = new FbClient(options, autoSync: true);
 // callback when feature flags are updated
 fbClient.FeatureFlagsUpdated += (object? sender, FeatureFlagsUpdatedEventArgs e) =>
 {
-    if (e.UpdatedFeatureFlags.Count > 0)
+    foreach (var ff in e.UpdatedFeatureFlags)
     {
-        foreach (var ff in e.UpdatedFeatureFlags)
-        {
-            // ff.Id is the feature flag key
-            // ff.Variation is the evaluated result for the feature flag
-            Console.WriteLine($"{ff.Id}: {ff.Variation}"); 
-        }
+        // ff.Id is the feature flag key
+        // ff.Variation is the evaluated result for the feature flag
+        Console.WriteLine($"{ff.Id}: {ff.Variation}"); 
     }
 };
 
@@ -80,7 +79,7 @@ await fbClient.IdentifyAsync(user);
 var boolVariation = client.BoolVariation("<feature-flag-key>", defaultValue: false);
 Console.WriteLine($"flag '{flagKey}' returns {boolVariation} for user {user.Key}");
 
-// dispose the client
+// close the client
 await fbClient.DisposeAsync();
 ```
 
@@ -96,7 +95,7 @@ await fbClient.DisposeAsync();
 
 ### FbClient
 
-The FbClient is the core component of the SDK, providing access to the FeatBit server. I recommend that applications treat it as a **singleton instance** for the lifetime of the application. Unlike the server-side SDK, you can create multiple instances of the client-side SDK in the same application for custom purposes.
+The FbClient is the core component of the SDK, providing access to the FeatBit server. I recommend that applications treat it as a **singleton instance** for the lifetime of the application. You can create multiple instances of the client-side SDK in the same application for custom purposes.
 
 #### Initialize FbClient with FbOptions.
 
@@ -121,10 +120,12 @@ var options = new FbOptionsBuilder("<replace-with-your-env-client-secret>")
                     .Eval(new Uri("<replace-with-your-event-url>")) // in SaaS mode, it's https://app-eval.featbit.co
                     .DataSyncMethod(DataSyncMethodEnum.Polling, 30000)
                     .Build();
-builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options));
+builder.Services.AddSingleton<IFbClient>(new FbClient(options));
 ```
 
 ### Data Synchronization 
+
+Currently, the client side SDK uses polling mode to synchronize data with the FeatBit server. You can set the interval of the polling when initializing the SDK. SDK provides also a method to manually synchronize data to keep the data up-to-date in custom scenarios.
 
 #### Polling Mode
 
@@ -235,6 +236,11 @@ await fbClient.DisposeAsync();
 ```
 
 ### Offline Mode
+
+You can load feature flags from a local file. You can also export the latest flags values to your local file and use it as the data source when initializing the SDK. This feature is useful when:
+
+- You want to use the SDK in offline mode, especially when a desktop application is running without an internet connection.
+- You want to bootstrap the SDK with saved feature flags data to reduce the time to get the latest feature flags evaluation result.
 
 To use the SDK in offline mode, initialize it with a custom data source or a pre-configured local file.
 

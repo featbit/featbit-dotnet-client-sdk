@@ -59,5 +59,5 @@ await Task.WhenAll(tasks);
 
 Console.ReadKey();
 
-await fbClient.DisposeAsync();
+await fbClient.CloseAsync();
 
