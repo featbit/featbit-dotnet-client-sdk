@@ -213,7 +213,9 @@ Each time a `xxxxVariation` method is called for evaluating a feature flag, the 
 If you don't need to track the usage insight of a feature flag, you can set the `trackInsight` parameter to `false`. Following code demonstrates how to disable tracking for a feature flag.
 
 ```csharp
-bool boolVariation = fbClient.BoolVariation("<feature-flag-key>", defaultValue: false, trackInsight: false);
+bool boolVariation = fbClient.BoolVariation("<feature-flag-key>", 
+                                            defaultValue: false, 
+                                            trackInsight: false);
 ```
 
 ### Experimentation Metric
