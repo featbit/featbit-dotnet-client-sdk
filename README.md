@@ -1,5 +1,8 @@
 # FeatBit Client-Side SDK for .NET
 
+**Client SDK is still under development, we aim to release the first version in the end of the April or early May**. Please watch the repository to get the latest updates.
+
+
 ## Introduction
 
 This is the .NET Client-Side SDK for the 100% open-source feature flags management platform FeatBit.
