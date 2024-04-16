@@ -77,7 +77,7 @@ namespace FeatBit.ClientSdk
         {
             if (fbUser == null)
             {
-                var randomKey = "unlogin-" + Guid.NewGuid().ToString();
+                var randomKey = "client-sdk-" + Guid.NewGuid().ToString();
                 _fbUser = FbUser.Builder(randomKey)
                     .Name(randomKey)
                     .Custom("application-type", _appType.ToString())
@@ -145,28 +145,29 @@ namespace FeatBit.ClientSdk
         #endregion
 
         #region evaluation methods
-        public bool BoolVariation(string key, bool defaultValue = false)
+        public bool BoolVariation(string key, bool defaultValue = false, bool trackInsight = true)
             => GetFeatureFlagValue(key, defaultValue, ValueConverters.Bool);
 
-        public double DoubleVariation(string key, double defaultValue = 0)
+        public double DoubleVariation(string key, double defaultValue = 0, bool trackInsight = true)
             => GetFeatureFlagValue(key, defaultValue, ValueConverters.Double);
 
-        public float FloatVariation(string key, float defaultValue = 0)
+        public float FloatVariation(string key, float defaultValue = 0, bool trackInsight = true)
             => GetFeatureFlagValue(key, defaultValue, ValueConverters.Float);
 
-        public int IntVariation(string key, int defaultValue = 0) 
+        public int IntVariation(string key, int defaultValue = 0, bool trackInsight = true) 
             => GetFeatureFlagValue(key, defaultValue, ValueConverters.Int);
 
-        public string StringVariation(string key, string defaultValue = "")
+        public string StringVariation(string key, string defaultValue = "", bool trackInsight = true)
             => GetFeatureFlagValue(key, defaultValue, ValueConverters.String);
 
         private TValue GetFeatureFlagValue<TValue>(
                     string key,
                     TValue defaultValue,
-                    ValueConverter<TValue> converter)
+                    ValueConverter<TValue> converter,
+                    bool trackInsight = true)
         {
             _featureFlagsCollection.TryGetValue(key, out FeatureFlag ff);
-            if (ff != null)
+            if (ff != null && trackInsight == true)
             {
                 Task.Run(async () => await _insightsAndEventSenderService.TrackInsightAsync(new VariationInsight(ff), _fbUser));
                 var rv = converter(ff.Variation, out var typedValue) ? typedValue : defaultValue;

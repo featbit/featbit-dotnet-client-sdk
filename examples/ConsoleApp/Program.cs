@@ -9,7 +9,7 @@ var consoleLoggerFactory = LoggerFactory.Create(builder =>
     builder.AddConsole();
 });
 var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
-                    .Eval(new Uri("https://featbit-tio-eval.zeabur.app"))
+                    .Eval(new Uri("https://app-eval.featbit.co"))
                     .LoggerFactory(consoleLoggerFactory)
                     .DataSyncMethod(DataSyncMethodEnum.Polling, 10000)
                     .Build();

@@ -18,11 +18,11 @@ namespace FeatBit.ClientSdk
         Task UpdateToLatestAsync();
         void Logout();
         void InitFeatureFlagsFromLocal(List<FeatureFlag> featureFlags);
-        bool BoolVariation(string key, bool defaultValue = false);
-        int IntVariation(string key, int defaultValue = 0);
-        float FloatVariation(string key, float defaultValue = 0);
-        double DoubleVariation(string key, double defaultValue = 0);
-        string StringVariation(string key, string defaultValue = "");
+        bool BoolVariation(string key, bool defaultValue = false, bool trackInsight = true);
+        int IntVariation(string key, int defaultValue = 0, bool trackInsight = true);
+        float FloatVariation(string key, float defaultValue = 0, bool trackInsight = true);
+        double DoubleVariation(string key, double defaultValue = 0, bool trackInsight = true);
+        string StringVariation(string key, string defaultValue = "", bool trackInsight = true);
         void Dispose();
         Task DisposeAsync();
     }

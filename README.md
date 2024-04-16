@@ -192,11 +192,36 @@ await fbClient.IdentifyAsync(user);
 
 NOTE: If `IdentifyAsync` is called at the same time that the polling interval triggers, a `SemaphoreSlim` will let the second call wait until the first call is finished. User information will always be updated to the latest one before the second call is executed.
 
-### Evaluate Feature Flags
+### Evaluating flags
 
-The evaluation of feature flags is done on the remote server. You can evaluate the feature flags by calling the following methods.
+The evaluation of feature flags is conducted on a remote server. The SDK retrieves the latest feature flag evaluation results for the identified user and stores them in local memory. If no user is identified, the SDK uses an anonymous user, represented by a random GUID as the key.
 
-### Track Feature Usage Insights and Events
+To evaluate a feature flag, you can call the following methods.
+
+```csharp
+bool boolVariation = fbClient.BoolVariation("<feature-flag-key>", defaultValue: false);
+int intVariation = fbClient.IntVariation("<feature-flag-key>", defaultValue: 0);
+float floatVariation = fbClient.FloatVariation("<feature-flag-key>", defaultValue: 0);
+double doubleVariation = fbClient.DoubleVariation("<feature-flag-key>", defaultValue: 0);
+string stringVariation = fbClient.StringVariation("<feature-flag-key>", defaultValue: "");
+```
+
+### Track Feature Usage Insights
+
+Each time a `xxxxVariation` method is called for evaluating a feature flag, the SDK will automatically track the feature usage insights. 
+
+If you don't need to track the usage insight of a feature flag, you can set the `trackInsight` parameter to `false`. Following code demonstrates how to disable tracking for a feature flag.
+
+```csharp
+bool boolVariation = fbClient.BoolVariation("<feature-flag-key>", defaultValue: false, trackInsight: false);
+```
+
+### Experimentation Metric
+
+You can track feature usage insights and experimentation metrics by calling the `Track` method. The method requires a `FbEvent` object that contains the event name and optional event properties.
+
+```csharp
+```
 
 ### Dispose FbClient
 
