@@ -177,6 +177,13 @@ namespace FeatBit.ClientSdk
         }
         #endregion
 
+        public void Track(FbUser user, string eventName) => Track(user, eventName, 1.0d);
+
+        /// <inheritdoc/>
+        public void Track(FbUser user, string eventName, double metricValue)
+        {
+        }
+
         public void Dispose()
         {
             Task.Run(DisposeAsync).Wait();

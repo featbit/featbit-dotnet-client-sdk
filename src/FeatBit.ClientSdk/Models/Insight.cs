@@ -104,16 +104,10 @@ namespace FeatBit.ClientSdk.Models
     }
     public class MetricInsight
     {
-        public string Route { get; set; }
-
-        public string Type { get; set; }
-
+        public string UserId { get; set; }
         public string EventName { get; set; }
 
-        public float NumericValue { get; set; }
-
-        public string AppType { get; set; }
-
+        public double NumericValue { get; set; }
         public long Timestamp { get; set; }
     }
 }

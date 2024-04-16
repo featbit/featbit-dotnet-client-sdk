@@ -218,10 +218,7 @@ bool boolVariation = fbClient.BoolVariation("<feature-flag-key>", defaultValue: 
 
 ### Experimentation Metric
 
-You can track feature usage insights and experimentation metrics by calling the `Track` method. The method requires a `FbEvent` object that contains the event name and optional event properties.
-
-```csharp
-```
+You can track the experiment metric by calling the `Track` method.  **Current version does not support the `Track` method.**
 
 ### Dispose FbClient
 

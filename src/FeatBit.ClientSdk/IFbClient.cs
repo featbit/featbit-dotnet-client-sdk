@@ -23,6 +23,8 @@ namespace FeatBit.ClientSdk
         float FloatVariation(string key, float defaultValue = 0, bool trackInsight = true);
         double DoubleVariation(string key, double defaultValue = 0, bool trackInsight = true);
         string StringVariation(string key, string defaultValue = "", bool trackInsight = true);
+        void Track(FbUser user, string eventName);
+        void Track(FbUser user, string eventName, double metricValue);
         void Dispose();
         Task DisposeAsync();
     }
