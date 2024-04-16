@@ -96,7 +96,7 @@ await fbClient.DisposeAsync();
 
 ### FbClient
 
-The FbClient is the heart of the SDK which providing access to FeatBit server. I recommend that applications make it as a singleton instance for the lifetime of the application. Difference with the server-side SDK, you can create multiple instances of the client-side SDK in the same application for custom purposes.
+The FbClient is the core component of the SDK, providing access to the FeatBit server. I recommend that applications treat it as a **singleton instance** for the lifetime of the application. Unlike the server-side SDK, you can create multiple instances of the client-side SDK in the same application for custom purposes.
 
 #### Initialize FbClient with FbOptions.
 
@@ -112,7 +112,21 @@ var options = new FbOptionsBuilder("<replace-with-your-env-client-secret>")
 var fbClient = new FbClient(options, autoSync: true);
 ```
 
-#### Data Synchronization - Polling Mode
+#### Dependency Injection
+
+This SDK is designed for multiple .NET front-end application platforms. Although we do not provide built-in support for dependency injection, you can use any DI container to manage the FbClient instance. In the examples, I demonstrate how to register the FbClient as a singleton service in Blazor WebAssembly, WPF, and MAUI applications.
+
+```csharp
+var options = new FbOptionsBuilder("<replace-with-your-env-client-secret>")
+                    .Eval(new Uri("<replace-with-your-event-url>")) // in SaaS mode, it's https://app-eval.featbit.co
+                    .DataSyncMethod(DataSyncMethodEnum.Polling, 30000)
+                    .Build();
+builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options));
+```
+
+### Data Synchronization 
+
+#### Polling Mode
 
 If you set `autoSync` to `true`, the SDK will start the data synchronization (polling mode) automatically. You can set the interval by changing the second parameter of `DataSyncMethod` method. For example, if you want to sync data every 5 minutes, you can set it to 300000.
 
@@ -130,7 +144,7 @@ var fbClient = new FbClient(options, autoSync: true);
 fbClient.StopAutoData();
 ```
 
-#### Data Synchronization - Manual Mode
+#### Manual Mode
 
 If you don't want to start the data synchronization automatically, you can set `autoSync` to `false`.
 
@@ -180,6 +194,8 @@ NOTE: If `IdentifyAsync` is called at the same time that the polling interval tr
 
 ### Evaluate Feature Flags
 
+The evaluation of feature flags is done on the remote server. You can evaluate the feature flags by calling the following methods.
+
 ### Track Feature Usage Insights and Events
 
 ### Dispose FbClient
@@ -196,8 +212,15 @@ await fbClient.DisposeAsync();
 
 ### Offline Mode
 
-If you want to use the SDK in offline mode, you can initialize the SDK with a custom data source.
+To use the SDK in offline mode, initialize it with a custom data source or a pre-configured local file.
 
+1. Retrieve your feature flags data from a local file or a custom data source.
+2. Use the `InitFeatureFlagsFromLocal` method to update the evaluated feature flags result data.
+
+```csharp
+List<FeatureFlag> featureFlagsData = _dataService.GetFeatureFlagsData();
+fbClient.InitFeatureFlagsFromLocal(featureFlagsData);
+```
 
 ## Supported .NET versions
 
