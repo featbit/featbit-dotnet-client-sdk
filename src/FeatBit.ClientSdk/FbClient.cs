@@ -80,7 +80,7 @@ namespace FeatBit.ClientSdk
                 var randomKey = "client-sdk-" + Guid.NewGuid().ToString();
                 _fbUser = FbUser.Builder(randomKey)
                     .Name(randomKey)
-                    .Custom("application-type", _appType.ToString())
+                    //.Custom("application-type", _appType.ToString())
                     .Build();
             }
             else

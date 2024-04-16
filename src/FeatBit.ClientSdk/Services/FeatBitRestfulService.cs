@@ -20,10 +20,12 @@ namespace FeatBit.ClientSdk.Services
     {
         private readonly FbOptions _options;
         private readonly ILogger<FeatBitRestfulService> _logger;
+        private readonly HttpClient _httpClient;
         public FeatBitRestfulService(FbOptions options)
         {
             _options = options;
             _logger = options.LoggerFactory.CreateLogger<FeatBitRestfulService>();
+            _httpClient = new HttpClient();
         }
 
         public async Task<List<FeatureFlag>> GetLatestAllAsync(FbUser identity, CancellationTokenSource cts = null)
@@ -36,35 +38,32 @@ namespace FeatBit.ClientSdk.Services
                 customizedProperties = identity.Custom.ToArray()
             };
 
-            using (var httpClient = new HttpClient())
+            _httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var contentStr = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(contentStr, Encoding.UTF8, "application/json");
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            try
             {
-                httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = await _httpClient.PostAsync(url, content, cts == null ? CancellationToken.None : cts.Token);
 
-                var contentStr = JsonSerializer.Serialize(requestBody);
-                var content = new StringContent(contentStr, Encoding.UTF8, "application/json");
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-                try
+                if (response.IsSuccessStatusCode)
                 {
-                    var response = await httpClient.PostAsync(url, content, cts == null ? CancellationToken.None : cts.Token);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        _logger.LogInformation("Response received successfully:");
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        return JsonSerializer.Deserialize<List<FeatureFlag>>(responseContent) ?? new List<FeatureFlag>();
-                    }
-                    else
-                    {
-                        throw new Exception("Failed to retrieve feature flags from  api client/latest-all");
-                    }
+                    _logger.LogInformation("Response received successfully:");
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return JsonSerializer.Deserialize<List<FeatureFlag>>(responseContent) ?? new List<FeatureFlag>();
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogError(ex, "Failed to retrieve feature flags from api client/latest-all");
-                    return new List<FeatureFlag>();
+                    throw new Exception("Failed to retrieve feature flags from  api client/latest-all");
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve feature flags from api client/latest-all");
+                return new List<FeatureFlag>();
             }
         }
     }

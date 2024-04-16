@@ -1,6 +1,7 @@
 # FeatBit Client-Side SDK for .NET
 
-**Client SDK is still under development, we aim to release the first version in the end of the April or early May**. Please watch the repository to get the latest updates.
+> [!WARNING]
+> **Client SDK is still under development, we aim to release the first version in the end of the April or early May**. Please watch the repository to get the latest updates.
 
 
 ## Introduction
@@ -179,25 +180,23 @@ var user = FbUser.Builder("<a-unique-key-of-user>")
 
 NOTE: custom value can be any type of object but wrapped in a string. For example, if it's a double 22.3, you should use "22.3" as the value.
 
-By calling `Identify`, the user information, but the feature flags evaluation result will not be updated immediately until the next data synchronization (triggered by the polling interval or method `UpdateToLatestAsync`).
+By calling `Identify`, the user information will be updated immediately, but the feature flags will not be updated immediately until the next data synchronization (triggered by the polling interval or method `UpdateToLatestAsync`).
 
 ```csharp
 fbClient.Identify(user);
 ```
 
-By calling `IdentifyAsync`, the user information and the feature flags evaluation result will be updated immediately.
+By calling `IdentifyAsync`, the user information and the feature flags evaluation will be updated immediately.
 
 ```csharp   
 await fbClient.IdentifyAsync(user);
 ```
-
-NOTE: If `IdentifyAsync` is called at the same time that the polling interval triggers, a `SemaphoreSlim` will let the second call wait until the first call is finished. User information will always be updated to the latest one before the second call is executed.
+> [!NOTE]
+> If `IdentifyAsync` is called at the same time that the polling interval triggers, a `SemaphoreSlim` will let the second call wait until the first call is finished. User information will always be updated to the latest one before the second call is executed.
 
 ### Evaluating flags
 
-The evaluation of feature flags is conducted on a remote server. The SDK retrieves the latest feature flag evaluation results for the identified user and stores them in local memory. If no user is identified, the SDK uses an anonymous user, represented by a random GUID as the key.
-
-To evaluate a feature flag, you can call the following methods.
+By using the feature flag data it has already received, the SDK get the value of a feature flag for a given user from local memory. To evaluate a feature flag, you can call the following methods.
 
 ```csharp
 bool boolVariation = fbClient.BoolVariation("<feature-flag-key>", defaultValue: false);
@@ -207,9 +206,11 @@ double doubleVariation = fbClient.DoubleVariation("<feature-flag-key>", defaultV
 string stringVariation = fbClient.StringVariation("<feature-flag-key>", defaultValue: "");
 ```
 
+The `defaultValue` parameter is optional. If the feature flag is not found, the SDK will return the default value.
+
 ### Track Feature Usage Insights
 
-Each time a `xxxxVariation` method is called for evaluating a feature flag, the SDK will automatically track the feature usage insights. 
+Each time a `Variation` method is called for evaluating a feature flag, the SDK will automatically track the feature usage insights. 
 
 If you don't need to track the usage insight of a feature flag, you can set the `trackInsight` parameter to `false`. Following code demonstrates how to disable tracking for a feature flag.
 
@@ -223,44 +224,44 @@ bool boolVariation = fbClient.BoolVariation("<feature-flag-key>",
 
 You can track the experiment metric by calling the `Track` method.  **Current version does not support the `Track` method.**
 
-### Dispose FbClient
+### Bootstrap
 
-When the application is closed, you should dispose the FbClient instance to release the resources.
-
-```csharp
-fbClient.Dispose();
-
-// or
-
-await fbClient.DisposeAsync();
-```
-
-### Offline Mode
-
-You can load feature flags from a local file. You can also export the latest flags values to your local file and use it as the data source when initializing the SDK. This feature is useful when:
-
-- You want to use the SDK in offline mode, especially when a desktop application is running without an internet connection.
-- You want to bootstrap the SDK with saved feature flags data to reduce the time to get the latest feature flags evaluation result.
-
-To use the SDK in offline mode, initialize it with a custom data source or a pre-configured local file.
+If you want to bootstrap the SDK with saved feature flags data to reduce the time to get the latest feature flags evaluation result. You can:
 
 1. Retrieve your feature flags data from a local file or a custom data source.
 2. Use the `InitFeatureFlagsFromLocal` method to update the evaluated feature flags result data.
 
 ```csharp
-List<FeatureFlag> featureFlagsData = _dataService.GetFeatureFlagsData();
+// code to read feature flags from local file or data service
+// to List<FeatureFlag> type object, then
 fbClient.InitFeatureFlagsFromLocal(featureFlagsData);
 ```
+
+You can also export the latest flags values to your local file and then use it as the data source when initializing the SDK.
+
+```csharp
+var featureFlags = fbClient.GetLatestAll();
+// code to save featureFlags to a local file
+```
+
+### Offline Mode
+
+In some scenarios, application need to be used without an internet connection. You can do the same as the bootstrap process to:
+
+1. Load feature flags from a local file.
+2. Save the latest flags values to your local file and use it as the data source when initializing the SDK. 
+
+### Offline Mode
+
+In some scenarios, application need to be used without an internet connection. You can load feature flags from a local file. You can also export the latest flags values to your local file and use it as the data source when initializing the SDK.
 
 ## Supported .NET versions
 
 This version of the SDK is built for the following targets:
 
 - .NET 6.0: runs on .NET 6.0 and above (including higher major versions).
-- .NET 8.0: runs on .NET 8.0 and above (including higher major versions).
-- .NET 8.0 Android: runs on Android projects that target .NET 8.0.
-- .NET 8.0 iOS: runs on iOS projects that target .NET 8.0.
-- .NET Core 3.1: runs on .NET Core 3.1+.
+- .NET 8.0 Android: runs on Android projects that target .NET 8.0 and above.
+- .NET 8.0 iOS: runs on iOS projects that target .NET 8.0 and above.
 - .NET Standard 2.0/2.1: runs in any project that is targeted to .NET Standard 2.x rather than to a specific runtime platform.
 
 
