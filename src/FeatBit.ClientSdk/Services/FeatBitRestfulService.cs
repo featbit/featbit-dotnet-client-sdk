@@ -21,11 +21,23 @@ namespace FeatBit.ClientSdk.Services
         private readonly FbOptions _options;
         private readonly ILogger<FeatBitRestfulService> _logger;
         private readonly HttpClient _httpClient;
+        private readonly HttpsClientHandlerService _httpsClientHandlerService;
         public FeatBitRestfulService(FbOptions options)
         {
             _options = options;
             _logger = options.LoggerFactory.CreateLogger<FeatBitRestfulService>();
+
+#if DEBUG && (ANDROID || IOS)
+            string eventUri = _options.EvalUri.ToString();
+            _httpsClientHandlerService = new HttpsClientHandlerService(eventUri);
+            HttpMessageHandler handler = _httpsClientHandlerService.GetPlatformMessageHandler();
+            if (handler != null)
+                _httpClient = new HttpClient(handler);
+            else
+                _httpClient = new HttpClient();
+#else
             _httpClient = new HttpClient();
+#endif
         }
 
         public async Task<List<FeatureFlag>> GetLatestAllAsync(FbUser identity, CancellationTokenSource cts = null)
@@ -35,7 +47,7 @@ namespace FeatBit.ClientSdk.Services
             {
                 keyId = identity.Key,
                 name = identity.Name,
-                customizedProperties = identity.Custom.ToArray()
+                customizedProperties = identity.Custom?.ToArray() ?? new KeyValuePair<string, string>[0]
             };
 
             _httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);

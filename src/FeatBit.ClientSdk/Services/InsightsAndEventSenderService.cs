@@ -22,10 +22,12 @@ namespace FeatBit.ClientSdk.Services
     {
         private readonly FbOptions _options;
         private readonly ILogger<InsightsAndEventSenderService> _logger;
+        private readonly HttpClient _httpClient;
         public InsightsAndEventSenderService(FbOptions options)
         {
             _options = options;
             _logger = options.LoggerFactory.CreateLogger<InsightsAndEventSenderService>();
+            _httpClient = new HttpClient();
         }
 
         public async Task TrackInsightAsync(VariationInsight evt, FbUser fbUser, CancellationTokenSource cts = null)
@@ -49,34 +51,32 @@ namespace FeatBit.ClientSdk.Services
                 }
             };
 
-            using (var httpClient = new HttpClient())
+
+            _httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var contentStr = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(contentStr, Encoding.UTF8, "application/json");
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            try
             {
-                httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = await _httpClient.PostAsync(url, content, cts == null ? CancellationToken.None : cts.Token);
 
-                var contentStr = JsonSerializer.Serialize(requestBody);
-                var content = new StringContent(contentStr, Encoding.UTF8, "application/json");
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-                try
+                if (response.IsSuccessStatusCode)
                 {
-                    var response = await httpClient.PostAsync(url, content, cts == null ? CancellationToken.None : cts.Token);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        _logger.LogInformation("New feature flag insight have been sent successfully");
-                    }
-                    else
-                    {
-                        _logger.LogError($"Failed to tracked feature flag insight; StatusCode: {response.StatusCode};");
-                    }
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation("New feature flag insight have been sent successfully");
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogError(ex, "Failed to tracked feature flag insight");
-                    throw ex;
+                    _logger.LogError($"Failed to tracked feature flag insight; StatusCode: {response.StatusCode};");
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to tracked feature flag insight");
+                throw ex;
             }
         }
 
