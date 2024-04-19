@@ -50,6 +50,7 @@ namespace FeatBit.ClientSdk.Services
                 customizedProperties = identity.Custom?.ToArray() ?? new KeyValuePair<string, string>[0]
             };
 
+            _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 

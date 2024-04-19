@@ -22,7 +22,7 @@ namespace DotNet8MauiApp
                                 .LoggerFactory(NullLoggerFactory.Instance)
                                 .DataSyncMethod(DataSyncMethodEnum.Polling, 300000)
                                 .Build();
-            builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: false));
+            builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: true));
 
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainViewModel>();

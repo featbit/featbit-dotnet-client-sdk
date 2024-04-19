@@ -23,11 +23,24 @@ namespace FeatBit.ClientSdk.Services
         private readonly FbOptions _options;
         private readonly ILogger<InsightsAndEventSenderService> _logger;
         private readonly HttpClient _httpClient;
+        private readonly HttpsClientHandlerService _httpsClientHandlerService;
+
         public InsightsAndEventSenderService(FbOptions options)
         {
             _options = options;
             _logger = options.LoggerFactory.CreateLogger<InsightsAndEventSenderService>();
+
+#if DEBUG && (ANDROID || IOS)
+            string eventUri = _options.EvalUri.ToString();
+            _httpsClientHandlerService = new HttpsClientHandlerService(eventUri);
+            HttpMessageHandler handler = _httpsClientHandlerService.GetPlatformMessageHandler();
+            if (handler != null)
+                _httpClient = new HttpClient(handler);
+            else
+                _httpClient = new HttpClient();
+#else
             _httpClient = new HttpClient();
+#endif
         }
 
         public async Task TrackInsightAsync(VariationInsight evt, FbUser fbUser, CancellationTokenSource cts = null)
