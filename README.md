@@ -257,13 +257,7 @@ In some scenarios, application need to be used without an internet connection. Y
 
 ## Supported .NET versions
 
-This version of the SDK is built for the following targets:
-
-- .NET 6.0: runs on .NET 6.0 and above (including higher major versions).
-- .NET 8.0 Android: runs on Android projects that target .NET 8.0 and above.
-- .NET 8.0 iOS: runs on iOS projects that target .NET 8.0 and above.
-- .NET Standard 2.0/2.1: runs in any project that is targeted to .NET Standard 2.x rather than to a specific runtime platform.
-
+This SDK should compatible with any other platform that supports .NET Standard version 2.0 or higher.
 
 ## Getting support
 
