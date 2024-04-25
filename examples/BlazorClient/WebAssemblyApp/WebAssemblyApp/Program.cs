@@ -1,6 +1,6 @@
-using WebAssemblyApp.Client.Pages;
 using WebAssemblyApp.Components;
 using FeatBit.ClientSdk;
+using FeatBit.ClientSdk.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace FeatBit.ClientSdk.Models
+namespace FeatBit.ClientSdk.Model
 {
     public sealed class Insight
     {
-        public EndUser? User { get; set; }
+        public EndUser User { get; set; }
 
         public IEnumerable<VariationInsight> Variations { get; set; } = Array.Empty<VariationInsight>();
 
@@ -20,32 +19,6 @@ namespace FeatBit.ClientSdk.Models
         public string Name { get; set; }
 
         public CustomizedProperty[] CustomizedProperties { get; set; } = Array.Empty<CustomizedProperty>();
-
-        public bool IsValid()
-        {
-            return !string.IsNullOrWhiteSpace(KeyId);
-        }
-
-        public string ValueOf(string property)
-        {
-            if (string.IsNullOrWhiteSpace(property))
-            {
-                return string.Empty;
-            }
-
-            if (property == EndUserConsts.KeyId)
-            {
-                return KeyId;
-            }
-
-            if (property == EndUserConsts.Name)
-            {
-                return Name;
-            }
-
-            var value = CustomizedProperties?.FirstOrDefault(x => x.Name == property);
-            return value?.Value ?? string.Empty;
-        }
     }
 
     public class CustomizedProperty
@@ -79,13 +52,6 @@ namespace FeatBit.ClientSdk.Models
             SendToExperiment = ff.SendToExperiment;
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
-
-        public VariationInsight ShallowCopy()
-        {
-            var newVI = this.MemberwiseClone() as VariationInsight;
-            newVI.Variation = new Variation(Variation.Id, Variation.Value);
-            return newVI;
-        }
     }
 
     public class Variation
@@ -99,9 +65,8 @@ namespace FeatBit.ClientSdk.Models
             Id = id;
             Value = value;
         }
-
-        public static readonly Variation Empty = new(string.Empty, string.Empty);
     }
+
     public class MetricInsight
     {
         public string UserId { get; set; }

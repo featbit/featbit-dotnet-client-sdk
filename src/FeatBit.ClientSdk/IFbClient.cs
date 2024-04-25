@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Enums;
+using FeatBit.ClientSdk.Events;
+using FeatBit.ClientSdk.Model;
 using Microsoft.Extensions.Logging;
 
 namespace FeatBit.ClientSdk

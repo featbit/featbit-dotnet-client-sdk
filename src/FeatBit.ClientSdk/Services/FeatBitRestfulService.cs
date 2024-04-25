@@ -8,6 +8,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using FeatBit.ClientSdk.Model;
+using FeatBit.ClientSdk.Options;
 
 namespace FeatBit.ClientSdk.Services
 {
@@ -42,7 +44,7 @@ namespace FeatBit.ClientSdk.Services
 
         public async Task<List<FeatureFlag>> GetLatestAllAsync(FbUser identity, CancellationTokenSource cts = null)
         {
-            var url = $"{_options.EvalUri}api/public/sdk/client/latest-all";
+            var url = $"{_options.EventUri}api/public/sdk/client/latest-all";
             var requestBody = new
             {
                 keyId = identity.Key,
@@ -51,7 +53,7 @@ namespace FeatBit.ClientSdk.Services
             };
 
             _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
+            _httpClient.DefaultRequestHeaders.Add("Authorization", _options.Secret);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var contentStr = JsonSerializer.Serialize(requestBody);

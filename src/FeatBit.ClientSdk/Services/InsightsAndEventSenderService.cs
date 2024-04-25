@@ -1,5 +1,4 @@
-﻿using FeatBit.ClientSdk.Models;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +8,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using FeatBit.ClientSdk.Model;
+using FeatBit.ClientSdk.Options;
 
 namespace FeatBit.ClientSdk.Services
 {
@@ -45,7 +46,7 @@ namespace FeatBit.ClientSdk.Services
 
         public async Task TrackInsightAsync(VariationInsight evt, FbUser fbUser, CancellationTokenSource cts = null)
         {
-            var url = $"{_options.EvalUri}api/public/insight/track";
+            var url = $"{_options.EventUri}api/public/insight/track";
             var requestBody = new List<Insight>()
             {
                 new Insight()
@@ -59,13 +60,13 @@ namespace FeatBit.ClientSdk.Services
                     Metrics = new List<MetricInsight>(),
                     Variations = new List<VariationInsight>
                     {
-                        evt.ShallowCopy()
+                        evt
                     }
                 }
             };
 
 
-            _httpClient.DefaultRequestHeaders.Add("Authorization", _options.EnvSecret);
+            _httpClient.DefaultRequestHeaders.Add("Authorization", _options.Secret);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var contentStr = JsonSerializer.Serialize(requestBody);

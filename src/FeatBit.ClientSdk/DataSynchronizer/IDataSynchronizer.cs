@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FeatBit.ClientSdk.Events;
+using FeatBit.ClientSdk.Model;
 
-namespace FeatBit.ClientSdk
+namespace FeatBit.ClientSdk.DataSynchronizer
 {
     public interface IDataSynchronizer
     {

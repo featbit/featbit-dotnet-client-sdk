@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FeatBit.ClientSdk;
+using FeatBit.ClientSdk.Model;
 
 
 namespace DotNet8MauiApp

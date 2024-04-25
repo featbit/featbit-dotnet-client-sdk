@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{88D7A6F6-FD3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeatBit.ClientSdk", "src\FeatBit.ClientSdk\FeatBit.ClientSdk.csproj", "{803B65EF-83E0-483A-9DD7-CFA33CE6A804}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNet8ConsoleApp", "examples\ConsoleApp\DotNet8ConsoleApp.csproj", "{65445ACE-964D-4C54-A1E9-9356F26BB1E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "examples\ConsoleApp\ConsoleApp.csproj", "{65445ACE-964D-4C54-A1E9-9356F26BB1E0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{CB1CAE3A-9FCC-4601-A676-0A8CF649C761}"
 EndProject

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Net;
 using System.Windows;
 using System.Windows.Input;
+using FeatBit.ClientSdk.Events;
 
 namespace WPFApp
 {

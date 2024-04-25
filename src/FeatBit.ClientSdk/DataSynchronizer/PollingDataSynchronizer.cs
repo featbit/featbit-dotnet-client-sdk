@@ -1,12 +1,15 @@
-﻿using FeatBit.ClientSdk.Services;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FeatBit.ClientSdk.Events;
+using FeatBit.ClientSdk.Model;
+using FeatBit.ClientSdk.Options;
+using FeatBit.ClientSdk.Services;
+using Microsoft.Extensions.Logging;
 
-namespace FeatBit.ClientSdk
+namespace FeatBit.ClientSdk.DataSynchronizer
 {
     internal class PollingDataSynchronizer : IDataSynchronizer
     {
@@ -34,7 +37,7 @@ namespace FeatBit.ClientSdk
 
         public void Identify(FbUser fbUser)
         {
-            _fbUser = fbUser.ShallowCopy();
+            _fbUser = fbUser;
         }
 
         public async Task StartAsync()
@@ -50,13 +53,13 @@ namespace FeatBit.ClientSdk
             if (_timer.Interval == _timerInitTimeSpan)
             {
                 _timer.Stop();
-                _timer.Interval = _options.PoollingInterval;
+                _timer.Interval = _options.PollingInterval.TotalMilliseconds;
                 _timer.AutoReset = true;
                 _timer.Start();
             }
             Task.Run(async () =>
             {
-                await UpdateFeatureFlagCollectionAsync(_fbUser.ShallowCopy());
+                await UpdateFeatureFlagCollectionAsync(_fbUser);
             });
         }
 
@@ -88,8 +91,8 @@ namespace FeatBit.ClientSdk
                     if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) ||
                         existingItem.Variation != item.Variation)
                     {
-                        changedItems.Add(item.ShallowCopy());
-                        _featureFlagsCollection.AddOrUpdate(item.Id, item.ShallowCopy(), (existingKey, existingValue) => item.ShallowCopy());
+                        changedItems.Add(item);
+                        _featureFlagsCollection.AddOrUpdate(item.Id, item, (existingKey, existingValue) => item);
                     }
                 }
 

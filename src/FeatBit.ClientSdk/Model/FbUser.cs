@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FeatBit.ClientSdk
+namespace FeatBit.ClientSdk.Model
 {
     public class FbUser
     {
@@ -36,31 +36,6 @@ namespace FeatBit.ClientSdk
         public static IFbUserBuilder Builder(string key)
         {
             return new FbUserBuilder(key);
-        }
-
-        public string ValueOf(string property)
-        {
-            if (string.IsNullOrWhiteSpace(property))
-            {
-                return string.Empty;
-            }
-
-            if (property == "keyId")
-            {
-                return Key;
-            }
-
-            if (property == "name")
-            {
-                return Name;
-            }
-
-            return Custom.TryGetValue(property, out var value) ? value : string.Empty;
-        }
-
-        internal FbUser ShallowCopy()
-        {
-            return new FbUser(Key, Name, new Dictionary<string, string>(Custom));
         }
     }
 }
