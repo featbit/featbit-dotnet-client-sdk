@@ -1,22 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Events;
 using FeatBit.ClientSdk.Model;
 
 namespace FeatBit.ClientSdk.DataSynchronizer
 {
-    public interface IDataSynchronizer
+    public interface IDataSynchronizer : IDisposable
     {
-        event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
+        /// <summary>
+        /// Indicates whether the data synchronizer has finished initializing.
+        /// </summary>
+        public bool Initialized { get; }
 
-        void Identify(FbUser fbUser);
-
-        Task StartAsync();
-
-        Task StopAsync();
-
-        Task UpdateFeatureFlagCollectionAsync(FbUser newFbUser = null);
-        void UpdateFeatureFlagsCollection(List<FeatureFlag> ffs);
+        /// <summary>
+        /// Starts the data synchronizer. This is called once from the <see cref="FbClient"/> constructor.
+        /// </summary>
+        /// <returns>a <c>Task</c> which is completed once the data synchronizer has finished starting up</returns>
+        Task<bool> StartAsync();
     }
 }

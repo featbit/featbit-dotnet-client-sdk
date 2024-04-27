@@ -13,7 +13,6 @@ namespace DotNet8MauiApp
             InitializeComponent();
             BindingContext = viewModel;
             _fbClient = fbClient;
-            _fbClient.FeatureFlagsUpdated += FeatureFlagsUpdated;
             Loaded += MainPage_Loaded;
         }
 

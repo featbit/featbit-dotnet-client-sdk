@@ -1,5 +1,6 @@
 using WebAssemblyApp.Components;
 using FeatBit.ClientSdk;
+using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 var options = new FbOptionsBuilder("").Build();
-builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: false));
+var user = FbUser.Builder("tester").Build();
+var fbClient = new FbClient(options, user);
+
+builder.Services.AddSingleton<IFbClient>(fbClient);
 
 var app = builder.Build();
 

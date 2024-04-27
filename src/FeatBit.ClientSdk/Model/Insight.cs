@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FeatBit.ClientSdk.Model
 {
-    public sealed class Insight
+    internal sealed class Insight
     {
         public EndUser User { get; set; }
 
@@ -12,7 +12,7 @@ namespace FeatBit.ClientSdk.Model
         public IEnumerable<MetricInsight> Metrics { get; set; } = Array.Empty<MetricInsight>();
     }
 
-    public class EndUser
+    internal sealed class EndUser
     {
         public string KeyId { get; set; }
 
@@ -21,21 +21,14 @@ namespace FeatBit.ClientSdk.Model
         public CustomizedProperty[] CustomizedProperties { get; set; } = Array.Empty<CustomizedProperty>();
     }
 
-    public class CustomizedProperty
+    internal sealed class CustomizedProperty
     {
         public string Name { get; set; }
 
         public string Value { get; set; }
     }
 
-    public class EndUserConsts
-    {
-        public const string KeyId = "keyId";
-
-        public const string Name = "name";
-    }
-
-    public class VariationInsight
+    internal sealed class VariationInsight
     {
         public string FeatureFlagKey { get; set; }
 
@@ -54,7 +47,7 @@ namespace FeatBit.ClientSdk.Model
         }
     }
 
-    public class Variation
+    internal sealed class Variation
     {
         public string Id { get; set; }
 
@@ -67,7 +60,7 @@ namespace FeatBit.ClientSdk.Model
         }
     }
 
-    public class MetricInsight
+    internal sealed class MetricInsight
     {
         public string UserId { get; set; }
         public string EventName { get; set; }

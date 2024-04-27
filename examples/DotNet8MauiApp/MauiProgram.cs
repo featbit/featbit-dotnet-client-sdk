@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using FeatBit.ClientSdk;
+using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
 
 namespace DotNet8MauiApp
@@ -20,7 +21,8 @@ namespace DotNet8MauiApp
             var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
                 .Polling(new Uri("https://app-eval.featbit.co"))
                 .Build();
-            builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, autoSync: true));
+            var user = FbUser.Builder("tester").Build();
+            builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, user));
 
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainViewModel>();

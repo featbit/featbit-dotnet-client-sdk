@@ -24,8 +24,9 @@ namespace WPFApp
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // TODO: Do we need this?
             // You can initialize feature flags from a local file
-            _fbClient.InitFeatureFlagsFromLocal(new List<FeatureFlag>() { });
+            // _fbClient.InitFeatureFlagsFromLocal(new List<FeatureFlag>() { });
 
             // You can save the feature flags to a local file by
             // 1. Calling _fbClient.GetLatestAll();

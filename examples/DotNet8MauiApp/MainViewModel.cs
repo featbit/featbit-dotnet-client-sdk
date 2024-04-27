@@ -30,7 +30,8 @@ namespace DotNet8MauiApp
         [RelayCommand]
         public async Task UpdateToLatestFeatureFlagsValue()
         {
-            await _fbClient.UpdateToLatestAsync();
+            // TODO: Implement the UpdateToLatestFeatureFlagsValue method
+            // await _fbClient.UpdateToLatestAsync();
         }
     }
 }

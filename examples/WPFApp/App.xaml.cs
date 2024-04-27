@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Windows;
+using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
 
 namespace WPFApp
@@ -25,12 +26,16 @@ namespace WPFApp
 
         private void ConfigureServices(IServiceCollection services)
         {
-            var consoleLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+            var consoleLoggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+
             var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
                 .Polling(new Uri("https://featbit-tio-eval.zeabur.app"))
                 .LoggerFactory(consoleLoggerFactory)
                 .Build();
-            services.AddSingleton<IFbClient>(provider => new FbClient(options));
+
+            var user = FbUser.Builder("tester").Build();
+
+            services.AddSingleton<IFbClient>(provider => new FbClient(options, user));
 
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginWindow>();

@@ -1,7 +1,5 @@
 ﻿using FeatBit.ClientSdk;
 using System.ComponentModel;
-using System.Net;
-using System.Windows;
 using System.Windows.Input;
 using FeatBit.ClientSdk.Events;
 
@@ -14,7 +12,6 @@ namespace WPFApp
         public MainViewModel(IFbClient fbClient)
         {
             _fbClient = fbClient;
-            _fbClient.FeatureFlagsUpdated += FeatureFlagsUpdated;
             SetVisibilities();
 
             GetLatestFeatureFlagsValuesCommand = new RelayCommand(GetLatestFeatureFlagsValues, CanExecuteGetLatestFeatureFlagsValues);
@@ -72,7 +69,8 @@ namespace WPFApp
         }
         private async void GetLatestFeatureFlagsValues()
         {
-            await _fbClient.UpdateToLatestAsync();
+            // TODO: Implement this method
+            // await _fbClient.UpdateToLatestAsync();
             SetVisibilities();
         }
         #endregion

@@ -25,7 +25,6 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        _fbClient.FeatureFlagsUpdated += FeatureFlagsUpdatedCallback;
         SetVisibility();
     }
 
@@ -73,10 +72,5 @@
             }).Wait();
         }
     }
-
-    public void Dispose()
-    {
-        _fbClient.FeatureFlagsUpdated -= FeatureFlagsUpdatedCallback;
-    }
-       
+    
 }

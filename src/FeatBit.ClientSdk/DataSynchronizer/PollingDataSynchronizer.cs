@@ -1,133 +1,130 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Events;
+using FeatBit.ClientSdk.Concurrent;
 using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
-using FeatBit.ClientSdk.Services;
+using FeatBit.ClientSdk.Store;
 using Microsoft.Extensions.Logging;
 
 namespace FeatBit.ClientSdk.DataSynchronizer
 {
-    internal class PollingDataSynchronizer : IDataSynchronizer
+    internal sealed class PollingDataSynchronizer : IDataSynchronizer
     {
-        public event EventHandler<FeatureFlagsUpdatedEventArgs> FeatureFlagsUpdated;
-        private readonly SemaphoreSlim _syncSemaphore = new SemaphoreSlim(1, 1);
+        private readonly TaskCompletionSource<bool> _startTask;
+        private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
 
-        private const int _timerInitTimeSpan = 1;
-        private readonly System.Timers.Timer _timer;
-        private readonly FbOptions _options;
+        private readonly TimeSpan _pollingInterval;
+        private readonly IUserFlagRequestor _requestor;
+        private readonly IMemoryStore _store;
+
+        private CancellationTokenSource _canceller;
+
+        public bool Initialized => _initialized;
+
         private readonly ILogger<PollingDataSynchronizer> _logger;
-        private readonly IFeatBitRestfulService _apiService;
-        private readonly ConcurrentDictionary<String, FeatureFlag> _featureFlagsCollection;
-        private FbUser _fbUser;
 
-        public PollingDataSynchronizer(
-            FbOptions options,
-            ConcurrentDictionary<String, FeatureFlag> featureFlagsCollection)
+        public PollingDataSynchronizer(FbOptions options, FbUser user, IMemoryStore store)
         {
-            _featureFlagsCollection = featureFlagsCollection;
-            _apiService = new FeatBitRestfulService(options);
+            _startTask = new TaskCompletionSource<bool>();
+            _pollingInterval = options.PollingInterval;
+
+            _store = store;
+            _requestor = new UserFlagRequestor(options, user);
+
             _logger = options.LoggerFactory.CreateLogger<PollingDataSynchronizer>();
-            _options = options.ShallowCopy();
-            _timer = new System.Timers.Timer();
         }
 
-        public void Identify(FbUser fbUser)
+        public Task<bool> StartAsync()
         {
-            _fbUser = fbUser;
+            _ = StartPollingAsync();
+
+            return _startTask.Task;
         }
 
-        public async Task StartAsync()
+        private async Task StartPollingAsync()
         {
-            _timer.Interval = _timerInitTimeSpan;
-            _timer.Elapsed += TimerElapsed;
-            _timer.AutoReset = false;
-            _timer.Start();
-        }
-
-        private void TimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (_timer.Interval == _timerInitTimeSpan)
+            _canceller = new CancellationTokenSource();
+            while (!_canceller.IsCancellationRequested)
             {
-                _timer.Stop();
-                _timer.Interval = _options.PollingInterval.TotalMilliseconds;
-                _timer.AutoReset = true;
-                _timer.Start();
-            }
-            Task.Run(async () =>
-            {
-                await UpdateFeatureFlagCollectionAsync(_fbUser);
-            });
-        }
+                var nextTime = DateTime.Now.Add(_pollingInterval);
 
-        public async Task UpdateFeatureFlagCollectionAsync(FbUser newFbUser = null)
-        {
-            await _syncSemaphore.WaitAsync();
-            try
-            {
-                _fbUser = newFbUser ?? _fbUser;
-                var newFfs = await _apiService.GetLatestAllAsync(_fbUser);
-                UpdateFeatureFlagsCollection(newFfs);
-            }
-            finally
-            {
-                _syncSemaphore.Release();
-            }
-        }
+                await SafePollAsync();
 
-        public void UpdateFeatureFlagsCollection(List<FeatureFlag> ffs)
-        {
-            try
-            {
-                List<FeatureFlag> changedItems = new List<FeatureFlag>();
-
-                _logger.LogInformation($"Latest Feature Flags Retrieving Started @ {DateTime.Now.ToString()}");
-
-                foreach (var item in ffs)
+                var timeToWait = nextTime.Subtract(DateTime.Now);
+                if (timeToWait.CompareTo(TimeSpan.Zero) > 0)
                 {
-                    if (!_featureFlagsCollection.TryGetValue(item.Id, out var existingItem) ||
-                        existingItem.Variation != item.Variation)
+                    try
                     {
-                        changedItems.Add(item);
-                        _featureFlagsCollection.AddOrUpdate(item.Id, item, (existingKey, existingValue) => item);
+                        await Task.Delay(timeToWait, _canceller.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
                     }
                 }
-
-                _logger.LogInformation($"Latest Feature Flags Retrieving Completed @ {DateTime.Now.ToString()}");
-
-                var args = new FeatureFlagsUpdatedEventArgs();
-                args.UpdatedFeatureFlags = changedItems;
-                OnFeatureFlagsUpdated(args);
             }
-            catch(Exception ex)
+        }
+
+        private async Task SafePollAsync()
+        {
+            try
             {
-                _logger.LogError(ex, $"Latest Feature Flags Retrieving Error @ {DateTime.Now.ToString()}");
-            }
-        }
+                var response = await _requestor.GetFeatureFlagsAsync();
+                if (response.IsFatal)
+                {
+                    _logger.LogError(
+                        "Polling data synchronizer encountered fatal HTTP error {StatusCode}. Stopping...",
+                        response.StatusCode
+                    );
 
-        protected virtual void OnFeatureFlagsUpdated(FeatureFlagsUpdatedEventArgs e)
-        {
-            EventHandler<FeatureFlagsUpdatedEventArgs> handler = FeatureFlagsUpdated;
-            if (handler != null)
+                    _startTask.TrySetResult(false);
+                    Dispose();
+                    return;
+                }
+
+                if (response.IsError)
+                {
+                    _logger.LogWarning(
+                        "Polling data synchronizer encountered transient HTTP error {StatusCode}.",
+                        response.StatusCode
+                    );
+
+                    return;
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(
+                        "Polling data at {Time:u} received {Count} flags.",
+                        DateTime.UtcNow,
+                        response.Flags.Length
+                    );
+                }
+
+                var flags = response.Flags;
+                for (var i = 0; i < flags.Length; i++)
+                {
+                    _store.Upsert(flags[i]);
+                }
+
+                if (_initialized.CompareAndSet(false, true))
+                {
+                    _startTask.SetResult(true);
+                    _logger.LogInformation("Initialized polling data synchronizer.");
+                }
+            }
+            catch (Exception ex)
             {
-                handler(this, e);
+                _logger.LogError(ex, "Exception occurred while polling data.");
             }
         }
 
-        public async Task StopAsync()
+        public void Dispose()
         {
-            FeatureFlagsUpdated = null;
-            _timer.Elapsed -= TimerElapsed;
-            _timer.Stop();
-        }
+            _canceller?.Cancel();
+            _canceller = null;
 
-        public async Task CloseTimerAsync()
-        {
-            await StopAsync();
-            _timer.Close();
+            _requestor?.Dispose();
         }
     }
 }
