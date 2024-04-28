@@ -51,15 +51,24 @@ namespace FeatBit.Sdk.Client
             _options = options;
             _user = initialUser;
 
-            _store = new DefaultMemoryStore();
+            _store = new DefaultMemoryStore(_options.Bootstrap);
             _evaluator = new Evaluator(_store);
-            _trackInsight = new TrackInsight(options);
             _flagTracker = new FlagTracker(_store);
-            _dataSynchronizer = _options.DataSyncMode switch
+
+            if (_options.Offline)
             {
-                DataSyncMode.Polling => _dataSynchronizer = new PollingDataSynchronizer(_options, _user, _store),
-                _ => new NullDataSynchronizer()
-            };
+                _trackInsight = new NoopTrackInsight();
+                _dataSynchronizer = new NullDataSynchronizer();
+            }
+            else
+            {
+                _trackInsight = new TrackInsight(options);
+                _dataSynchronizer = _options.DataSyncMode switch
+                {
+                    DataSyncMode.Polling => _dataSynchronizer = new PollingDataSynchronizer(_options, _user, _store),
+                    _ => new NullDataSynchronizer()
+                };
+            }
 
             _logger = _options.LoggerFactory.CreateLogger<FbClient>();
 

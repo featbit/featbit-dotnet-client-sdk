@@ -1,4 +1,5 @@
 ﻿using System;
+using FeatBit.Sdk.Client.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -9,6 +10,8 @@ namespace FeatBit.Sdk.Client.Options
         private TimeSpan _startWaitTime;
 
         private readonly string _secret;
+        private bool _offline;
+        private FeatureFlag[] _bootstrap;
         private DataSyncMode _dataSyncMode;
         private Uri _pollingUri;
         private TimeSpan _pollingInterval;
@@ -22,8 +25,10 @@ namespace FeatBit.Sdk.Client.Options
         public FbOptionsBuilder(string secret)
         {
             _startWaitTime = TimeSpan.FromSeconds(5);
-            _secret = secret;
 
+            _offline = false;
+            _bootstrap = Array.Empty<FeatureFlag>();
+            _secret = secret;
             _dataSyncMode = DataSyncMode.Polling;
 
             _pollingUri = new Uri("http://localhost:5100");
@@ -36,8 +41,8 @@ namespace FeatBit.Sdk.Client.Options
 
         public FbOptions Build()
         {
-            return new FbOptions(_startWaitTime, _secret, _dataSyncMode, _pollingUri, _pollingInterval, _eventUri,
-                _loggerFactory);
+            return new FbOptions(_startWaitTime, _offline, _bootstrap, _secret, _dataSyncMode, _pollingUri,
+                _pollingInterval, _eventUri, _loggerFactory);
         }
 
         public FbOptionsBuilder StartWaitTime(TimeSpan startWaitTime)
@@ -62,6 +67,18 @@ namespace FeatBit.Sdk.Client.Options
         public FbOptionsBuilder Event(Uri eventUri)
         {
             _eventUri = eventUri;
+            return this;
+        }
+
+        public FbOptionsBuilder Offline(bool offline)
+        {
+            _offline = offline;
+            return this;
+        }
+
+        public FbOptionsBuilder Bootstrap(FeatureFlag[] bootstrap)
+        {
+            _bootstrap = bootstrap ?? Array.Empty<FeatureFlag>();
             return this;
         }
 

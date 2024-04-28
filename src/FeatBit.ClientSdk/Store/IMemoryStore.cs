@@ -15,13 +15,6 @@ namespace FeatBit.Sdk.Client.Store
     public interface IMemoryStore
     {
         /// <summary>
-        /// Overwrites the store's contents with a set of new items.
-        /// </summary>
-        /// <param name="flags">a list of <see cref="FeatureFlag"/> instances with
-        /// their store keys.</param>
-        void Populate(IEnumerable<FeatureFlag> flags);
-
-        /// <summary>
         /// Retrieves a feature flag from the store, if available.
         /// </summary>
         /// <param name="id">the unique id of the flag within the store</param>

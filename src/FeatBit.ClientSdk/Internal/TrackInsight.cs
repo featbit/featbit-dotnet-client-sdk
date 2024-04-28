@@ -13,6 +13,18 @@ namespace FeatBit.Sdk.Client.Internal
         Task RunAsync(Insight insight);
     }
 
+    internal class NoopTrackInsight : ITrackInsight
+    {
+        public void Dispose()
+        {
+        }
+
+        public Task RunAsync(Insight insight)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
     internal class TrackInsight : FbApiClient, ITrackInsight
     {
         private readonly ILogger<TrackInsight> _trackInsightLogger;

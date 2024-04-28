@@ -1,4 +1,5 @@
 ﻿using System;
+using FeatBit.Sdk.Client.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -11,6 +12,18 @@ namespace FeatBit.Sdk.Client.Options
         /// </summary>
         /// <value>Defaults to 5 seconds</value>
         public TimeSpan StartWaitTime { get; set; }
+
+        /// <summary>
+        /// Whether or not this client is offline. If true, no calls to FeatBit will be made.
+        /// </summary>
+        /// <value>Defaults to <c>false</c></value>
+        public bool Offline { get; set; }
+
+        /// <summary>
+        /// Feature flags to be used as initial data before the first data synchronization with FeatBit.
+        /// </summary>
+        /// <value>Defaults to an empty array.</value>
+        public FeatureFlag[] Bootstrap { get; set; }
 
         /// <summary>
         /// The SDK secret for your FeatBit environment.
@@ -49,6 +62,8 @@ namespace FeatBit.Sdk.Client.Options
 
         internal FbOptions(
             TimeSpan startWaitTime,
+            bool offline,
+            FeatureFlag[] bootstrap,
             string secret,
             DataSyncMode dataSyncMode,
             Uri pollingUri,
@@ -57,6 +72,8 @@ namespace FeatBit.Sdk.Client.Options
             ILoggerFactory loggerFactory)
         {
             StartWaitTime = startWaitTime;
+            Offline = offline;
+            Bootstrap = bootstrap;
             Secret = secret;
 
             DataSyncMode = dataSyncMode;

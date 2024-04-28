@@ -9,15 +9,11 @@ namespace FeatBit.Sdk.Client.Store
     {
         private readonly object _writeLock = new object();
 
-        private volatile Dictionary<string, FeatureFlag> _items =
-            new Dictionary<string, FeatureFlag>();
+        private volatile Dictionary<string, FeatureFlag> _items;
 
-        public void Populate(IEnumerable<FeatureFlag> flags)
+        public DefaultMemoryStore(IEnumerable<FeatureFlag> bootstrap)
         {
-            lock (_writeLock)
-            {
-                _items = flags.ToDictionary(flag => flag.Id, flag => flag);
-            }
+            _items = bootstrap.ToDictionary(flag => flag.Id, flag => flag);
         }
 
         public FeatureFlag Get(string key)
