@@ -111,7 +111,6 @@ namespace FeatBit.Sdk.Client
                 _ => new NullDataSynchronizer()
             };
 
-            // TODO: timeout
             await _dataSynchronizer.StartAsync();
         }
 
