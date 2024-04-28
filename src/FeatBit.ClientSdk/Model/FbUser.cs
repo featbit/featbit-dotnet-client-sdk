@@ -2,7 +2,7 @@
 
 namespace FeatBit.ClientSdk.Model
 {
-    public class FbUser
+    public sealed class FbUser
     {
         public readonly string Key;
         public readonly string Name;
@@ -36,6 +36,28 @@ namespace FeatBit.ClientSdk.Model
         public static IFbUserBuilder Builder(string key)
         {
             return new FbUserBuilder(key);
+        }
+
+        internal object AsEndUser()
+        {
+            var customizedProperties = new List<object>();
+            foreach (var custom in Custom)
+            {
+                customizedProperties.Add(new
+                {
+                    name = custom.Key,
+                    value = custom.Value
+                });
+            }
+
+            var endUser = new
+            {
+                keyId = Key,
+                name = Name,
+                customizedProperties
+            };
+
+            return endUser;
         }
     }
 }

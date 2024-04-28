@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FeatBit.ClientSdk.DataSynchronizer;
 using FeatBit.ClientSdk.Evaluation;
+using FeatBit.ClientSdk.Internal;
 using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
 using FeatBit.ClientSdk.Store;
@@ -18,6 +19,7 @@ namespace FeatBit.ClientSdk
         private readonly FbOptions _options;
         private readonly IEvaluator _evaluator;
         private readonly IMemoryStore _store;
+        private readonly ITrackInsight _trackInsight;
         private IDataSynchronizer _dataSynchronizer;
         private FbUser _user;
 
@@ -46,6 +48,7 @@ namespace FeatBit.ClientSdk
 
             _store = new DefaultMemoryStore();
             _evaluator = new Evaluator(_store);
+            _trackInsight = new TrackInsight(options);
             _dataSynchronizer = _options.DataSyncMode switch
             {
                 DataSyncMode.Polling => _dataSynchronizer = new PollingDataSynchronizer(_options, _user, _store),
@@ -164,14 +167,15 @@ namespace FeatBit.ClientSdk
                 return new EvalDetail<TValue>("client not ready", defaultValue);
             }
 
-            var evalResult = _evaluator.Evaluate(key);
+            var (evalResult, featureFlag) = _evaluator.Evaluate(key);
             if (!evalResult.IsValid)
             {
                 // error happened when evaluate flag, return default value 
                 return new EvalDetail<TValue>(evalResult.Reason, defaultValue);
             }
 
-            // TODO: send evaluation event
+            var insight = new Insight(_user, featureFlag);
+            _ = _trackInsight.RunAsync(insight);
 
             return converter(evalResult.Value, out var typedValue)
                 ? new EvalDetail<TValue>(evalResult.Reason, typedValue)

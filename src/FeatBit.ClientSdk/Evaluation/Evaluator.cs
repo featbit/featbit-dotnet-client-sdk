@@ -1,13 +1,14 @@
-﻿using FeatBit.ClientSdk.Store;
+﻿using FeatBit.ClientSdk.Model;
+using FeatBit.ClientSdk.Store;
 
 namespace FeatBit.ClientSdk.Evaluation
 {
     internal interface IEvaluator
     {
-        EvalResult Evaluate(string key);
+        (EvalResult evalResult, FeatureFlag flag) Evaluate(string key);
     }
 
-    internal class Evaluator : IEvaluator
+    internal sealed class Evaluator : IEvaluator
     {
         private readonly IMemoryStore _store;
 
@@ -16,13 +17,13 @@ namespace FeatBit.ClientSdk.Evaluation
             _store = store;
         }
 
-        public EvalResult Evaluate(string key)
+        public (EvalResult evalResult, FeatureFlag flag) Evaluate(string key)
         {
             var flag = _store.Get(key);
 
             return flag == null
-                ? EvalResult.FlagNotFound
-                : EvalResult.Of(flag);
+                ? (EvalResult.FlagNotFound, null)
+                : (EvalResult.Of(flag), flag);
         }
     }
 }

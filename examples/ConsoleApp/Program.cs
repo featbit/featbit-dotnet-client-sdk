@@ -1,40 +1,52 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using FeatBit.ClientSdk;
 using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
 using Microsoft.Extensions.Logging;
 
+// Set secret to your FeatBit SDK secret.
+const string secret = "JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ";
+if (string.IsNullOrWhiteSpace(secret))
+{
+    Console.WriteLine("Please edit Program.cs to set secret to your FeatBit SDK secret first. Exiting...");
+    Environment.Exit(1);
+}
+
+// Creates a new client to connect to FeatBit with a custom option.
+// use console logging for FbClient
 var consoleLoggerFactory = LoggerFactory.Create(opt => opt.AddConsole().SetMinimumLevel(LogLevel.Debug));
 
-var options = new FbOptionsBuilder("JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ")
+var options = new FbOptionsBuilder(secret)
     .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(10))
+    .Event(new Uri("http://localhost:5100"))
     .LoggerFactory(consoleLoggerFactory)
     .Build();
 
-var user = FbUser.Builder("tester").Build();
+var initialUser = FbUser.Builder("tester-id")
+    .Name("tester")
+    .Custom("role", "developer")
+    .Build();
 
-var fbClient = new FbClient(options, user);
-if (fbClient.Initialized)
+var client = new FbClient(options, initialUser);
+if (!client.Initialized)
 {
-    Console.WriteLine("Client initialized");
+    Console.WriteLine("FbClient failed to initialize. Exiting...");
+    Environment.Exit(-1);
 }
-else
+
+while (true)
 {
-    Console.WriteLine("Client failed to initialized");
+    Console.WriteLine("Please input flagKey, for example 'use-new-algorithm'. Input 'exit' to exit.");
+
+    var flagKey = Console.ReadLine();
+    if (flagKey == "exit")
+    {
+        Console.WriteLine("Exiting, please wait...");
+        break;
+    }
+
+    var detail = client.StringVariationDetail(flagKey, "fallback");
+    Console.WriteLine("Value for flag '{0}' is '{1}', reason: {2}", flagKey, detail.Value, detail.Reason);
+    Console.WriteLine();
 }
-
-var allFlags = fbClient.AllFlags();
-
-var serializerOptions = new JsonSerializerOptions
-{
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    NumberHandling = JsonNumberHandling.AllowReadingFromString,
-    WriteIndented = true
-};
-var json = JsonSerializer.Serialize(allFlags, serializerOptions);
-Console.WriteLine(json);
-
-Console.ReadKey();

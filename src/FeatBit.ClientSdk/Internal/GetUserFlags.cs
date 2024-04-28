@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -50,14 +49,7 @@ namespace FeatBit.ClientSdk.Internal
             FbUser user,
             Func<FbOptions, HttpClient> customHttpClientFactory = null) : base(options, customHttpClientFactory)
         {
-            var jsonObject = new
-            {
-                keyId = user.Key,
-                name = user.Name,
-                customizedProperties = new List<KeyValuePair<string, string>>(user.Custom)
-            };
-
-            _payload = JsonSerializer.SerializeToUtf8Bytes(jsonObject, DefaultSerializerOptions);
+            _payload = JsonSerializer.SerializeToUtf8Bytes(user.AsEndUser(), DefaultSerializerOptions);
         }
 
         public async Task<GetUserFlagsResponse> RunAsync(long timestamp)

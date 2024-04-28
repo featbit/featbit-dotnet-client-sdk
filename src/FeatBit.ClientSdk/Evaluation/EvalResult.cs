@@ -2,7 +2,7 @@
 
 namespace FeatBit.ClientSdk.Evaluation
 {
-    internal class EvalResult
+    internal sealed class EvalResult
     {
         public bool IsValid { get; set; }
 
@@ -12,6 +12,7 @@ namespace FeatBit.ClientSdk.Evaluation
 
         private EvalResult(bool isValid, string reason, string value)
         {
+            IsValid = isValid;
             Reason = reason;
             Value = value;
         }

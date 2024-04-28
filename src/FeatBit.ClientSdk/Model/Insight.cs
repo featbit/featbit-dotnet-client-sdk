@@ -1,31 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace FeatBit.ClientSdk.Model
 {
     internal sealed class Insight
     {
-        public EndUser User { get; set; }
+        public object User { get; set; }
 
-        public IEnumerable<VariationInsight> Variations { get; set; } = Array.Empty<VariationInsight>();
+        public VariationInsight[] Variations { get; set; }
 
-        public IEnumerable<MetricInsight> Metrics { get; set; } = Array.Empty<MetricInsight>();
-    }
-
-    internal sealed class EndUser
-    {
-        public string KeyId { get; set; }
-
-        public string Name { get; set; }
-
-        public CustomizedProperty[] CustomizedProperties { get; set; } = Array.Empty<CustomizedProperty>();
-    }
-
-    internal sealed class CustomizedProperty
-    {
-        public string Name { get; set; }
-
-        public string Value { get; set; }
+        public Insight(FbUser user, FeatureFlag flag)
+        {
+            User = user.AsEndUser();
+            Variations = new VariationInsight[1];
+            Variations[0] = new VariationInsight(flag);
+        }
     }
 
     internal sealed class VariationInsight
@@ -45,27 +33,5 @@ namespace FeatBit.ClientSdk.Model
             SendToExperiment = ff.SendToExperiment;
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
-    }
-
-    internal sealed class Variation
-    {
-        public string Id { get; set; }
-
-        public string Value { get; set; }
-
-        public Variation(string id, string value)
-        {
-            Id = id;
-            Value = value;
-        }
-    }
-
-    internal sealed class MetricInsight
-    {
-        public string UserId { get; set; }
-        public string EventName { get; set; }
-
-        public double NumericValue { get; set; }
-        public long Timestamp { get; set; }
     }
 }
