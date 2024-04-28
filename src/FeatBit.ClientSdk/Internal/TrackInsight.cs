@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
+using Microsoft.Extensions.Logging;
 
 namespace FeatBit.Sdk.Client.Internal
 {
@@ -14,9 +15,12 @@ namespace FeatBit.Sdk.Client.Internal
 
     internal class TrackInsight : FbApiClient, ITrackInsight
     {
+        private readonly ILogger<TrackInsight> _trackInsightLogger;
+
         public TrackInsight(FbOptions options, Func<FbOptions, HttpClient> customHttpClientFactory = null)
             : base(options, customHttpClientFactory)
         {
+            _trackInsightLogger = options.LoggerFactory.CreateLogger<TrackInsight>();
         }
 
         protected override Func<FbOptions, Uri> BaseAddressGetter => options => new Uri(
@@ -26,11 +30,18 @@ namespace FeatBit.Sdk.Client.Internal
 
         public async Task RunAsync(Insight insight)
         {
-            var insights = new Insight[1];
-            insights[0] = insight;
+            try
+            {
+                var insights = new Insight[1];
+                insights[0] = insight;
 
-            var payload = JsonSerializer.SerializeToUtf8Bytes(insights, DefaultSerializerOptions);
-            await PostAsync(string.Empty, payload);
+                var payload = JsonSerializer.SerializeToUtf8Bytes(insights, DefaultSerializerOptions);
+                await PostAsync(string.Empty, payload);
+            }
+            catch (Exception ex)
+            {
+                _trackInsightLogger.LogError(ex, "Exception occurred while tracking insight.");
+            }
         }
     }
 }
