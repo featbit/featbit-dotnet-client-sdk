@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FeatBit.Sdk.Client.ChangeTracker;
 using FeatBit.Sdk.Client.Evaluation;
 using FeatBit.Sdk.Client.Model;
 
@@ -13,6 +14,11 @@ namespace FeatBit.Sdk.Client
         /// </summary>
         /// <value>true if the client is ready</value>
         bool Initialized { get; }
+
+        /// <summary>
+        /// Get the flag tracker to subscribe flag changes.
+        /// </summary>
+        IFlagTracker FlagTracker { get; }
 
         /// <summary>
         /// Changes the current evaluation use and requests flags for that user if we are online.

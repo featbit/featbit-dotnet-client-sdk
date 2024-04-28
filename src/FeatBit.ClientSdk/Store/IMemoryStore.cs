@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FeatBit.Sdk.Client.Model;
 
 namespace FeatBit.Sdk.Client.Store
@@ -38,5 +39,10 @@ namespace FeatBit.Sdk.Client.Store
         /// </summary>
         /// <param name="flag">the feature flag</param>
         void Upsert(FeatureFlag flag);
+
+        /// <summary>
+        /// Triggers an event when a feature flag is changed.
+        /// </summary>
+        event EventHandler<FlagValueChangedEvent> FlagValueChanged;
     }
 }

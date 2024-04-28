@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FeatBit.Sdk.Client.ChangeTracker;
 using FeatBit.Sdk.Client.DataSynchronizer;
 using FeatBit.Sdk.Client.Evaluation;
 using FeatBit.Sdk.Client.Internal;
@@ -20,10 +21,14 @@ namespace FeatBit.Sdk.Client
         private readonly IEvaluator _evaluator;
         private readonly IMemoryStore _store;
         private readonly ITrackInsight _trackInsight;
+        private readonly IFlagTracker _flagTracker;
         private IDataSynchronizer _dataSynchronizer;
         private FbUser _user;
 
         private readonly ILogger<FbClient> _logger;
+
+        /// <inheritdoc/>
+        public IFlagTracker FlagTracker => _flagTracker;
 
         /// <summary>
         /// Creates a new FbClient instance, then starts fetching feature flags workflow.
@@ -49,6 +54,7 @@ namespace FeatBit.Sdk.Client
             _store = new DefaultMemoryStore();
             _evaluator = new Evaluator(_store);
             _trackInsight = new TrackInsight(options);
+            _flagTracker = new FlagTracker(_store);
             _dataSynchronizer = _options.DataSyncMode switch
             {
                 DataSyncMode.Polling => _dataSynchronizer = new PollingDataSynchronizer(_options, _user, _store),

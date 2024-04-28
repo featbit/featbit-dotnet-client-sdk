@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.ChangeTracker;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,28 @@ if (!client.Initialized)
     Console.WriteLine("FbClient failed to initialize. Exiting...");
     Environment.Exit(-1);
 }
+
+Subscriber generalSubscriber = changeEvent =>
+{
+    Console.WriteLine(
+        "This is generalSubscriber for all flags. Flag '{0}' has changed from '{1}' to '{2}'",
+        changeEvent.Key,
+        changeEvent.OldValue,
+        changeEvent.NewValue
+    );
+};
+client.FlagTracker.Subscribe(generalSubscriber);
+
+Subscriber gameRunnerSubscriber = changeEvent =>
+{
+    Console.WriteLine(
+        "This is gameRunnerSubscriber for 'game-runner' flag only. Flag value for 'game-runner' has changed from '{0}' to '{1}'",
+        changeEvent.OldValue,
+        changeEvent.NewValue
+    );
+};
+client.FlagTracker.Subscribe("game-runner", gameRunnerSubscriber);
+// client.FlagTracker.Unsubscribe("game-runner", gameRunnerSubscriber);
 
 while (true)
 {
