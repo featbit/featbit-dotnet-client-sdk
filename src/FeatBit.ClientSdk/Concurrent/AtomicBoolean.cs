@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 
 // From: https://github.com/akkadotnet/akka.net/blob/dev/src/core/Akka/Util/AtomicBoolean.cs
-namespace FeatBit.ClientSdk.Concurrent
+namespace FeatBit.Sdk.Client.Concurrent
 {
     /// <summary>
     /// Implementation of the java.concurrent.util.AtomicBoolean type.

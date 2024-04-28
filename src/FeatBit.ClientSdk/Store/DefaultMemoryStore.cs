@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using FeatBit.ClientSdk.Model;
+using FeatBit.Sdk.Client.Model;
 
-namespace FeatBit.ClientSdk.Store
+namespace FeatBit.Sdk.Client.Store
 {
     public class DefaultMemoryStore : IMemoryStore
     {

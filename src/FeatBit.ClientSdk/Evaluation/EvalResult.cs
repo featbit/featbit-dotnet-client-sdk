@@ -1,6 +1,6 @@
-﻿using FeatBit.ClientSdk.Model;
+﻿using FeatBit.Sdk.Client.Model;
 
-namespace FeatBit.ClientSdk.Evaluation
+namespace FeatBit.Sdk.Client.Evaluation
 {
     internal sealed class EvalResult
     {

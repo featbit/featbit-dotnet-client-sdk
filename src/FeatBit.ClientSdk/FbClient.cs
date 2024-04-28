@@ -1,16 +1,16 @@
 ﻿using System;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.DataSynchronizer;
-using FeatBit.ClientSdk.Evaluation;
-using FeatBit.ClientSdk.Internal;
-using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Options;
-using FeatBit.ClientSdk.Store;
+using FeatBit.Sdk.Client.DataSynchronizer;
+using FeatBit.Sdk.Client.Evaluation;
+using FeatBit.Sdk.Client.Internal;
+using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Options;
+using FeatBit.Sdk.Client.Store;
+using Microsoft.Extensions.Logging;
 
-namespace FeatBit.ClientSdk
+namespace FeatBit.Sdk.Client
 {
     public class FbClient : IFbClient
     {

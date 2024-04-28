@@ -1,5 +1,5 @@
-﻿using FeatBit.ClientSdk;
-using FeatBit.ClientSdk.Events;
+﻿using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.Events;
 
 namespace DotNet8MauiApp
 {

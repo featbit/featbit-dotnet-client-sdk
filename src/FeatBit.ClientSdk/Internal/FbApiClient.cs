@@ -6,10 +6,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Options;
+using FeatBit.Sdk.Client.Options;
 using Microsoft.Extensions.Logging;
 
-namespace FeatBit.ClientSdk.Internal
+namespace FeatBit.Sdk.Client.Internal
 {
     internal abstract class FbApiClient : IDisposable
     {

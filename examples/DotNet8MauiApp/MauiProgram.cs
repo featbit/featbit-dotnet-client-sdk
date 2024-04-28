@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using FeatBit.ClientSdk;
-using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Options;
+﻿using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Options;
+using Microsoft.Extensions.Logging;
 
 namespace DotNet8MauiApp
 {

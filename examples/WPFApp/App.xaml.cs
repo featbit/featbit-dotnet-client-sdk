@@ -1,9 +1,9 @@
-﻿using FeatBit.ClientSdk;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Windows;
-using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Options;
+using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Options;
 
 namespace WPFApp
 {

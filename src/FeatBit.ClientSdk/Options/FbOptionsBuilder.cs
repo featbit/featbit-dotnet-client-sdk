@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace FeatBit.ClientSdk.Options
+namespace FeatBit.Sdk.Client.Options
 {
     public class FbOptionsBuilder
     {

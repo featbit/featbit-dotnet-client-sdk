@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace FeatBit.ClientSdk.DataSynchronizer
+namespace FeatBit.Sdk.Client.DataSynchronizer
 {
     internal sealed class NullDataSynchronizer : IDataSynchronizer
     {

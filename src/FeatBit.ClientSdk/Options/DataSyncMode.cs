@@ -1,4 +1,4 @@
-﻿namespace FeatBit.ClientSdk.Options
+﻿namespace FeatBit.Sdk.Client.Options
 {
     public enum DataSyncMode
     {

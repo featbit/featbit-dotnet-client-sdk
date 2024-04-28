@@ -1,7 +1,7 @@
-﻿using FeatBit.ClientSdk;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows.Input;
-using FeatBit.ClientSdk.Events;
+using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.Events;
 
 namespace WPFApp
 {

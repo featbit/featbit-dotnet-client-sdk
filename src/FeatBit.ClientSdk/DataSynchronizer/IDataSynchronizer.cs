@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Model;
 
-namespace FeatBit.ClientSdk.DataSynchronizer
+namespace FeatBit.Sdk.Client.DataSynchronizer
 {
     public interface IDataSynchronizer : IDisposable
     {

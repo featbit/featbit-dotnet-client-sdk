@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace FeatBit.ClientSdk
+namespace FeatBit.Sdk.Client
 {
     internal delegate bool ValueConverter<TValue>(string value, out TValue converted);
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using FeatBit.ClientSdk.Model;
+using FeatBit.Sdk.Client.Model;
 
-namespace FeatBit.ClientSdk.Events
+namespace FeatBit.Sdk.Client.Events
 {
     // TODO: delete this
     public class FeatureFlagsUpdatedEventArgs : EventArgs

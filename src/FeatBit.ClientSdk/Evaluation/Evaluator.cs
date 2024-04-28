@@ -1,7 +1,7 @@
-﻿using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Store;
+﻿using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Store;
 
-namespace FeatBit.ClientSdk.Evaluation
+namespace FeatBit.Sdk.Client.Evaluation
 {
     internal interface IEvaluator
     {

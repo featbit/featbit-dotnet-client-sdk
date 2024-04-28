@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using FeatBit.ClientSdk.Model;
+using FeatBit.Sdk.Client.Model;
 
-namespace FeatBit.ClientSdk.Store
+namespace FeatBit.Sdk.Client.Store
 {
     /// <summary>
     /// Interface for a data store that holds feature flags data received by the SDK.

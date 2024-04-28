@@ -1,4 +1,4 @@
-﻿namespace FeatBit.ClientSdk.Evaluation
+﻿namespace FeatBit.Sdk.Client.Evaluation
 {
     public sealed class EvalDetail<TValue>
     {

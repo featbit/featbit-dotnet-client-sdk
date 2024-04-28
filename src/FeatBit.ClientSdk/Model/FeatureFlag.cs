@@ -1,4 +1,4 @@
-namespace FeatBit.ClientSdk.Model
+namespace FeatBit.Sdk.Client.Model
 {
     public class FeatureFlag
     {

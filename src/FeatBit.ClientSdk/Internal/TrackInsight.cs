@@ -2,10 +2,10 @@ using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Options;
+using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Options;
 
-namespace FeatBit.ClientSdk.Internal
+namespace FeatBit.Sdk.Client.Internal
 {
     internal interface ITrackInsight : IDisposable
     {

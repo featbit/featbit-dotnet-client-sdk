@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Evaluation;
-using FeatBit.ClientSdk.Model;
+using FeatBit.Sdk.Client.Evaluation;
+using FeatBit.Sdk.Client.Model;
 
-namespace FeatBit.ClientSdk
+namespace FeatBit.Sdk.Client
 {
     public interface IFbClient : IDisposable
     {

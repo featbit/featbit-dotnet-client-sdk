@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FeatBit.ClientSdk.Model
+namespace FeatBit.Sdk.Client.Model
 {
     public interface IFbUserBuilder
     {

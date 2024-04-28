@@ -1,7 +1,6 @@
-﻿using FeatBit.ClientSdk;
-using System.Net;
-using System.Windows;
-using FeatBit.ClientSdk.Model;
+﻿using System.Windows;
+using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.Model;
 
 namespace WPFApp
 {

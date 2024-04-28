@@ -1,8 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using FeatBit.ClientSdk;
-using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Options;
+using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Options;
 using Microsoft.Extensions.Logging;
 
 // Set secret to your FeatBit SDK secret.

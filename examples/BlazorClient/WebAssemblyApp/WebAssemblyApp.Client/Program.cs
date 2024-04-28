@@ -1,7 +1,7 @@
+using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Options;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using FeatBit.ClientSdk;
-using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Options;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

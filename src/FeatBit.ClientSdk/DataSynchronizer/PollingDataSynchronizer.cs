@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FeatBit.ClientSdk.Concurrent;
-using FeatBit.ClientSdk.Internal;
-using FeatBit.ClientSdk.Model;
-using FeatBit.ClientSdk.Options;
-using FeatBit.ClientSdk.Store;
+using FeatBit.Sdk.Client.Concurrent;
+using FeatBit.Sdk.Client.Internal;
+using FeatBit.Sdk.Client.Model;
+using FeatBit.Sdk.Client.Options;
+using FeatBit.Sdk.Client.Store;
 using Microsoft.Extensions.Logging;
 
-namespace FeatBit.ClientSdk.DataSynchronizer
+namespace FeatBit.Sdk.Client.DataSynchronizer
 {
     internal sealed class PollingDataSynchronizer : IDataSynchronizer
     {
