@@ -21,8 +21,7 @@ namespace FeatBit.ClientSdk
         private IDataSynchronizer _dataSynchronizer;
         private FbUser _user;
 
-        private ILogger<FbClient> _logger;
-        private IFbClient _fbClientImplementation;
+        private readonly ILogger<FbClient> _logger;
 
         /// <summary>
         /// Creates a new FbClient instance, then starts fetching feature flags workflow.
@@ -171,6 +170,8 @@ namespace FeatBit.ClientSdk
                 // error happened when evaluate flag, return default value 
                 return new EvalDetail<TValue>(evalResult.Reason, defaultValue);
             }
+
+            // TODO: send evaluation event
 
             return converter(evalResult.Value, out var typedValue)
                 ? new EvalDetail<TValue>(evalResult.Reason, typedValue)

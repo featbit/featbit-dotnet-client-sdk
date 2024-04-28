@@ -1,5 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FeatBit.ClientSdk;
 using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
@@ -23,5 +25,16 @@ else
 {
     Console.WriteLine("Client failed to initialized");
 }
+
+var allFlags = fbClient.AllFlags();
+
+var serializerOptions = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    NumberHandling = JsonNumberHandling.AllowReadingFromString,
+    WriteIndented = true
+};
+var json = JsonSerializer.Serialize(allFlags, serializerOptions);
+Console.WriteLine(json);
 
 Console.ReadKey();

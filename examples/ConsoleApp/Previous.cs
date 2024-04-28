@@ -27,22 +27,6 @@ public class Previous
             .Build();
         await fbClient.IdentifyAsync(authenticatedUser);
 
-        // TODO: Uncomment the following code to run multi-thread tasks
-        // Console.WriteLine("Press any key to run multi-thread tasks");
-        // Console.ReadKey();
-        //
-        // var tasks = new Task[5];
-        // for (var i = 0; i < tasks.Length; i++)
-        // {
-        //     tasks[i] = Task.Run(() =>
-        //     {
-        //         fbClient.StringVariation("welcome-text-visibility", "Collapsed");
-        //         return Task.Delay(10 * 000);
-        //     });
-        // }
-
-        // await Task.WhenAll(tasks);
-
         Console.ReadKey();
         fbClient.Dispose();
     }

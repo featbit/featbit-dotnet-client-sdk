@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FeatBit.ClientSdk.Options
 {
@@ -43,7 +44,7 @@ namespace FeatBit.ClientSdk.Options
         /// <summary>
         /// The logger factory used by FbClient.
         /// </summary>
-        /// <value>Defaults to <see cref="NullLoggerFactory.Instance"/>.</value>
+        /// <value>Defaults to <see cref="NullLoggerFactory.Instance"/></value>
         public ILoggerFactory LoggerFactory { get; set; }
 
         internal FbOptions(
@@ -66,14 +67,6 @@ namespace FeatBit.ClientSdk.Options
             EventUri = eventUri;
 
             LoggerFactory = loggerFactory;
-        }
-
-        internal FbOptions ShallowCopy()
-        {
-            var newOptions = new FbOptions(StartWaitTime, Secret, DataSyncMode, PollingUri, PollingInterval, EventUri,
-                LoggerFactory);
-
-            return newOptions;
         }
     }
 }

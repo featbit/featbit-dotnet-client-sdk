@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FeatBit.ClientSdk.Concurrent;
+using FeatBit.ClientSdk.Internal;
 using FeatBit.ClientSdk.Model;
 using FeatBit.ClientSdk.Options;
 using FeatBit.ClientSdk.Store;
@@ -15,14 +16,14 @@ namespace FeatBit.ClientSdk.DataSynchronizer
         private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
 
         private readonly TimeSpan _pollingInterval;
-        private readonly IUserFlagRequestor _requestor;
+        private readonly IGetUserFlags _getUserFlags;
         private readonly IMemoryStore _store;
+        private readonly ILogger<PollingDataSynchronizer> _logger;
 
+        private long _timestamp;
         private CancellationTokenSource _canceller;
 
         public bool Initialized => _initialized;
-
-        private readonly ILogger<PollingDataSynchronizer> _logger;
 
         public PollingDataSynchronizer(FbOptions options, FbUser user, IMemoryStore store)
         {
@@ -30,7 +31,8 @@ namespace FeatBit.ClientSdk.DataSynchronizer
             _pollingInterval = options.PollingInterval;
 
             _store = store;
-            _requestor = new UserFlagRequestor(options, user);
+            _timestamp = 0;
+            _getUserFlags = new GetUserFlags(options, user);
 
             _logger = options.LoggerFactory.CreateLogger<PollingDataSynchronizer>();
         }
@@ -69,11 +71,11 @@ namespace FeatBit.ClientSdk.DataSynchronizer
         {
             try
             {
-                var response = await _requestor.GetFeatureFlagsAsync();
+                var response = await _getUserFlags.RunAsync(_timestamp);
                 if (response.IsFatal)
                 {
                     _logger.LogError(
-                        "Polling data synchronizer encountered fatal HTTP error {StatusCode}. Stopping...",
+                        "Polling data synchronizer encountered fatal HTTP error {StatusCode}. Stop polling...",
                         response.StatusCode
                     );
 
@@ -92,10 +94,11 @@ namespace FeatBit.ClientSdk.DataSynchronizer
                     return;
                 }
 
+                _timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug(
-                        "Polling data at {Time:u} received {Count} flags.",
+                        "Polling data at {Time:u} received {Count} new flags.",
                         DateTime.UtcNow,
                         response.Flags.Length
                     );
@@ -124,7 +127,7 @@ namespace FeatBit.ClientSdk.DataSynchronizer
             _canceller?.Cancel();
             _canceller = null;
 
-            _requestor?.Dispose();
+            _getUserFlags?.Dispose();
         }
     }
 }
