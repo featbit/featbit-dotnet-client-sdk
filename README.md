@@ -108,9 +108,6 @@ flagTracker.Subscribe(flagKey, @event =>
 ### Examples
 
 - [Console App](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/ConsoleApp)
-- [MAUI](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/DotNet8MauiApp)
-- [WPF](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/WPFApp)
-- [ASP.NET Core Blazor WebAssembly](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/BlazorClient/WebAssemblyApp)
 
 ## SDK
 
