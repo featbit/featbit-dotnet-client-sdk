@@ -34,8 +34,9 @@ namespace WPFApp
                 .Build();
 
             var user = FbUser.Builder("tester").Build();
+            var fbClient = new FbClient(options, user);
 
-            services.AddSingleton<IFbClient>(provider => new FbClient(options, user));
+            services.AddSingleton<IFbClient>(fbClient);
 
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginWindow>();

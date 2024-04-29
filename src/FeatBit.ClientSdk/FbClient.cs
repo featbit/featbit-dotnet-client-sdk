@@ -175,7 +175,8 @@ namespace FeatBit.Sdk.Client
             TValue defaultValue,
             ValueConverter<TValue> converter)
         {
-            if (!Initialized)
+            // if the client is not ready and no bootstrap flags
+            if (!Initialized && _options.Bootstrap.Length == 0)
             {
                 // Flag evaluation before client initialized; always returning default value
                 return new EvalDetail<TValue>("client not ready", defaultValue);
@@ -200,6 +201,7 @@ namespace FeatBit.Sdk.Client
         public void Dispose()
         {
             _dataSynchronizer?.Dispose();
+            _flagTracker?.Dispose();
         }
     }
 }

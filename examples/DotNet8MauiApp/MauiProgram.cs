@@ -18,11 +18,18 @@ namespace DotNet8MauiApp
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-            var options = new FbOptionsBuilder("S37S_0bmkUKTQkCIg5GnKQ5ZjgdjXPU0qDo5LAVn4GzA")
+            var options = new FbOptionsBuilder("<replace-with-your-secret>")
                 .Polling(new Uri("https://app-eval.featbit.co"))
+                .Event(new Uri("https://app-eval.featbit.co"))
                 .Build();
-            var user = FbUser.Builder("tester").Build();
-            builder.Services.AddSingleton<IFbClient>(provider => new FbClient(options, user));
+
+            var initialUser = FbUser.Builder("tester-id")
+                .Name("tester")
+                .Custom("role", "developer")
+                .Build();
+
+            var fbClient = new FbClient(options, initialUser);
+            builder.Services.AddSingleton<IFbClient>(fbClient);
 
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainViewModel>();

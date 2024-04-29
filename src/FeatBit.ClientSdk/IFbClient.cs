@@ -21,7 +21,7 @@ namespace FeatBit.Sdk.Client
         IFlagTracker FlagTracker { get; }
 
         /// <summary>
-        /// Changes the current evaluation use and requests flags for that user if we are online.
+        /// Changes the current evaluation user and requests flags for that user.
         /// </summary>
         Task IdentifyAsync(FbUser user);
 
