@@ -14,7 +14,7 @@ if (string.IsNullOrWhiteSpace(secret))
 
 // Creates a new client to connect to FeatBit with a custom option.
 // use console logging for FbClient
-var consoleLoggerFactory = LoggerFactory.Create(opt => opt.AddConsole().SetMinimumLevel(LogLevel.Debug));
+var consoleLoggerFactory = LoggerFactory.Create(opt => opt.AddConsole().SetMinimumLevel(LogLevel.Information));
 
 var options = new FbOptionsBuilder(secret)
     .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(10))
@@ -71,3 +71,6 @@ while (true)
     Console.WriteLine("Value for flag '{0}' is '{1}', reason: {2}", flagKey, detail.Value, detail.Reason);
     Console.WriteLine();
 }
+
+// delay 1s to ensure that all events has been sent
+await Task.Delay(1000);
