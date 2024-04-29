@@ -56,9 +56,6 @@ Subscriber keyedSubscriber = changeEvent =>
 };
 flagTracker.Subscribe("game-runner", keyedSubscriber);
 
-flagTracker.Unsubscribe(generalSubscriber);
-flagTracker.Unsubscribe(keyedSubscriber);
-
 while (true)
 {
     Console.WriteLine("Please input flagKey, for example 'use-new-algorithm'. Input 'exit' to exit.");
