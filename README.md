@@ -181,6 +181,43 @@ var bob = FbUser.Builder("a-unique-key-of-bob")
     .Build();
 ```
 
+### Track flag changes
+
+To get notified when a feature flag is changed, we offer two methods
+
+- subscribe to the changes of any feature flag(s)
+  ```csharp
+  Subscriber generalSubscriber = changeEvent =>
+  {
+      Console.WriteLine(
+          "This is generalSubscriber for all flags. Flag '{0}' value has changed from '{1}' to '{2}'",
+          changeEvent.Key,
+          changeEvent.OldValue,
+          changeEvent.NewValue
+      );
+  };
+  flagTracker.Subscribe(generalSubscriber);
+  ```
+- subscribe to the changes of a specific feature flag
+  ```csharp
+  Subscriber keyedSubscriber = changeEvent =>
+  {
+      Console.WriteLine(
+          "This is gameRunnerSubscriber for 'game-runner' flag only. Flag value for 'game-runner' has changed from '{0}' to '{1}'",
+          changeEvent.OldValue,
+          changeEvent.NewValue
+      );
+  };
+  flagTracker.Subscribe("game-runner", keyedSubscriber);
+  ```
+
+To unsubscribe from the changes of a feature flag, you can call the `Unsubscribe` method.
+
+```csharp
+flagTracker.Unsubscribe(generalSubscriber);
+flagTracker.Unsubscribe(keyedSubscriber);
+```
+
 ### Identifying and changing user
 
 Like all client-side FeatBit SDKs, the FbClient always has **a single current user**, which is used to evaluate feature

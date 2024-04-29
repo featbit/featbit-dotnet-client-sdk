@@ -1,59 +1,76 @@
 ﻿using FeatBit.Sdk.Client;
+using FeatBit.Sdk.Client.ChangeTracker;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
+using Microsoft.Extensions.Logging;
 
-// setup SDK options
-var options = new FbOptionsBuilder("<replace-with-your-env-secret>")
-    .Polling(new Uri("<replace-with-your-polling-url>"), TimeSpan.FromMinutes(5))
-    .Event(new Uri("<replace-with-your-event-url>"))
+// Set secret to your FeatBit SDK secret.
+const string secret = "JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ";
+if (string.IsNullOrWhiteSpace(secret))
+{
+    Console.WriteLine("Please edit Program.cs to set secret to your FeatBit SDK secret first. Exiting...");
+    Environment.Exit(1);
+}
+
+// Creates a new client to connect to FeatBit with a custom option.
+// use console logging for FbClient
+var consoleLoggerFactory = LoggerFactory.Create(opt => opt.AddConsole().SetMinimumLevel(LogLevel.Debug));
+
+var options = new FbOptionsBuilder(secret)
+    .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(10))
+    .Event(new Uri("http://localhost:5100"))
+    .LoggerFactory(consoleLoggerFactory)
     .Build();
 
-// use the anonymous user as the initial user
-var anonymousUser = FbUser.Builder("anonymous")
-    .Name("anonymous")
-    .Custom("role", "visitor")
+var initialUser = FbUser.Builder("tester-id")
+    .Name("tester")
+    .Custom("role", "developer")
     .Build();
 
-// Creates a new client instance that connects to FeatBit with the custom option.
-var client = new FbClient(options, anonymousUser);
+var client = new FbClient(options, initialUser);
 if (!client.Initialized)
 {
-    Console.WriteLine("FbClient failed to initialize. All Variation calls will use fallback value.");
-}
-else
-{
-    Console.WriteLine("FbClient successfully initialized!");
+    Console.WriteLine("FbClient failed to initialize. Exiting...");
+    Environment.Exit(-1);
 }
 
-// after user logged in, call IdentifyAsync to switch the user and get the latest feature flags for the user
-var authenticatedUser = FbUser.Builder("a-unique-key-of-bob")
-    .Name("bob")
-    .Custom("country", "FR")
-    .Build();
-await client.IdentifyAsync(authenticatedUser);
-
-// flag to be evaluated
-const string flagKey = "game-runner";
-
-// evaluate a boolean flag for the user
-var boolVariation = client.BoolVariation(flagKey, defaultValue: false);
-Console.WriteLine($"flag '{flagKey}' returns {boolVariation} for user {authenticatedUser.Key}");
-
-// evaluate a boolean flag for the user with reason
-var boolVariationDetail = client.BoolVariationDetail(flagKey, defaultValue: false);
-Console.WriteLine(
-    $"flag '{flagKey}' returns {boolVariationDetail.Value} for user {authenticatedUser.Key}. " +
-    $"Reason Description: {boolVariationDetail.Reason}"
-);
-
-// subscribe to flag changes
-var flagTracker = client.FlagTracker;
-flagTracker.Subscribe(flagKey, @event =>
+Subscriber generalSubscriber = changeEvent =>
 {
     Console.WriteLine(
-        "Flag value for '{0}' has changed from '{1}' to '{2}'",
-        @event.Key,
-        @event.OldValue,
-        @event.NewValue
+        "This is generalSubscriber for all flags. Flag value for '{0}' has changed from '{1}' to '{2}'",
+        changeEvent.Key,
+        changeEvent.OldValue,
+        changeEvent.NewValue
     );
-});
+};
+var flagTracker = client.FlagTracker;
+flagTracker.Subscribe(generalSubscriber);
+
+Subscriber keyedSubscriber = changeEvent =>
+{
+    Console.WriteLine(
+        "This is gameRunnerSubscriber for 'game-runner' flag only. Flag value for 'game-runner' has changed from '{0}' to '{1}'",
+        changeEvent.OldValue,
+        changeEvent.NewValue
+    );
+};
+flagTracker.Subscribe("game-runner", keyedSubscriber);
+
+flagTracker.Unsubscribe(generalSubscriber);
+flagTracker.Unsubscribe(keyedSubscriber);
+
+while (true)
+{
+    Console.WriteLine("Please input flagKey, for example 'use-new-algorithm'. Input 'exit' to exit.");
+
+    var flagKey = Console.ReadLine();
+    if (flagKey == "exit")
+    {
+        Console.WriteLine("Exiting, please wait...");
+        break;
+    }
+
+    var detail = client.StringVariationDetail(flagKey, "fallback");
+    Console.WriteLine("Value for flag '{0}' is '{1}', reason: {2}", flagKey, detail.Value, detail.Reason);
+    Console.WriteLine();
+}
