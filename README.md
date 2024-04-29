@@ -290,6 +290,14 @@ var options = new FbOptionsBuilder()
     .Build();
 ```
 
+You can use the `AllFlags` method to get the latest feature flags data.
+
+```csharp
+IDictionary<string, FeatureFlag> featureFlags = fbClient.AllFlags();
+```
+
+You can then save the data to a file or a database and use it to bootstrap the SDK in the next application run.
+
 ## Supported .NET versions
 
 This SDK should compatible with any other platform that supports .NET Standard version 2.0 or higher.
