@@ -290,12 +290,13 @@ var options = new FbOptionsBuilder()
     .Build();
 ```
 
-If you want to save the latest feature flags data to the storage, you can use the `AllFlags` method.
+You can use the `AllFlags` method to get the latest feature flags data.
 
 ```csharp
 IDictionary<string, FeatureFlag> featureFlags = fbClient.AllFlags();
 ```
 
+You can save the data to a file or a database and use it to bootstrap the SDK in the next application run.
 
 ## Supported .NET versions
 
