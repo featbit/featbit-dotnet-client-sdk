@@ -296,7 +296,7 @@ You can use the `AllFlags` method to get the latest feature flags data.
 IDictionary<string, FeatureFlag> featureFlags = fbClient.AllFlags();
 ```
 
-You can save the data to a file or a database and use it to bootstrap the SDK in the next application run.
+You can then save the data to a file or a database and use it to bootstrap the SDK in the next application run.
 
 ## Supported .NET versions
 
