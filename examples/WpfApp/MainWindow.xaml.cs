@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using FeatBit.Sdk.Client;
 using FeatBit.Sdk.Client.ChangeTracker;
 using FeatBit.Sdk.Client.Model;
@@ -21,21 +20,21 @@ namespace WpfApp
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var evalDetail = _client.StringVariationDetail("welcome-visibilty", "Visible");
-            GameRunner.Text = $"Welcome visibilty: {evalDetail.Value}, reason: {evalDetail.Reason}";
+            var evalDetail = _client.StringVariationDetail("welcome-visibility", "Visible");
+            GameRunner.Text = $"Welcome visibility: {evalDetail.Value}, reason: {evalDetail.Reason}";
 
             var flagTracker = _client.FlagTracker;
 
             Subscriber subscriber = valueChangedEvent =>
             {
-                Dispatcher.Invoke(() =>
+                Dispatcher.InvokeAsync(() =>
                 {
                     GameRunner.Text =
-                        $"Welcome visibilty: {valueChangedEvent.NewValue} (Old value: {valueChangedEvent.OldValue})";
+                        $"Welcome visibility: {valueChangedEvent.NewValue} (Old value: {valueChangedEvent.OldValue})";
                 });
             };
 
-            flagTracker.Subscribe("welcome-visibilty", subscriber);
+            flagTracker.Subscribe("welcome-visibility", subscriber);
         }
 
         private async void Identify_Click(object sender, RoutedEventArgs e)

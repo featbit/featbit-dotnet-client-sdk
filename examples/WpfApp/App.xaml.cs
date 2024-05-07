@@ -13,5 +13,12 @@ namespace WpfApp
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            // initialize FbClient by accessing the Instance property
+            _ = FeatBit.Instance;
+        }
     }
 }
