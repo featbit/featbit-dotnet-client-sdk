@@ -77,7 +77,8 @@ namespace FeatBit.Sdk.Client
 
             try
             {
-                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout);
+                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout)
+                    .ConfigureAwait(false);
                 if (success)
                 {
                     _logger.LogInformation("FbClient successfully started");
@@ -114,7 +115,7 @@ namespace FeatBit.Sdk.Client
             try
             {
                 var timeout = identifyTimeout ?? TimeSpan.FromSeconds(3);
-                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout);
+                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout).ConfigureAwait(false);
                 return success;
             }
             catch (OperationCanceledException)

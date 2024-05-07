@@ -59,7 +59,7 @@ namespace FeatBit.Sdk.Client.Internal
 
             _stopwatch.Restart();
             using var cts = new CancellationTokenSource(DefaultTimeout);
-            var response = await _httpClient.PostAsync(path, content, cts.Token);
+            var response = await _httpClient.PostAsync(path, content, cts.Token).ConfigureAwait(false);
             _stopwatch.Stop();
 
             if (_logger.IsEnabled(LogLevel.Debug))
@@ -68,7 +68,7 @@ namespace FeatBit.Sdk.Client.Internal
                     "Api call took {ElapsedMs} ms, response status {Status}. The body is {Body}",
                     _stopwatch.ElapsedMilliseconds,
                     (int)response.StatusCode,
-                    response.Content != null ? await response.Content.ReadAsStringAsync() : string.Empty
+                    response.Content != null ? await response.Content.ReadAsStringAsync().ConfigureAwait(false) : string.Empty
                 );
             }
 

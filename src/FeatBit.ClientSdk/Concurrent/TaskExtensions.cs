@@ -11,7 +11,7 @@ namespace FeatBit.Sdk.Client.Concurrent
             using var cts = new CancellationTokenSource();
             var delayTask = Task.Delay(timeout, cts.Token);
 
-            var resultTask = await Task.WhenAny(task, delayTask);
+            var resultTask = await Task.WhenAny(task, delayTask).ConfigureAwait(false);
             if (resultTask == delayTask)
             {
                 // Operation cancelled
@@ -21,7 +21,7 @@ namespace FeatBit.Sdk.Client.Concurrent
             // Cancel the timer task so that it does not fire
             cts.Cancel();
 
-            return await task;
+            return await task.ConfigureAwait(false);
         }
     }
 }

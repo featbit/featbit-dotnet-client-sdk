@@ -54,7 +54,7 @@ namespace FeatBit.Sdk.Client.Internal
 
         public async Task<GetUserFlagsResponse> RunAsync(long timestamp)
         {
-            using var response = await PostAsync($"?timestamp={timestamp}", _payload);
+            using var response = await PostAsync($"?timestamp={timestamp}", _payload).ConfigureAwait(false);
 
             var statusCode = (int)response.StatusCode;
             if (!response.IsSuccessStatusCode)
@@ -62,7 +62,7 @@ namespace FeatBit.Sdk.Client.Internal
                 return GetUserFlagsResponse.Error(statusCode);
             }
 
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(content))
             {
                 return GetUserFlagsResponse.Ok(Array.Empty<FeatureFlag>());
