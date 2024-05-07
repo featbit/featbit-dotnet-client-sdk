@@ -21,7 +21,7 @@ namespace FeatBit.Sdk.Client
         IFlagTracker FlagTracker { get; }
 
         /// <summary>
-        /// Starts FbClient
+        /// Starts FbClient and waits for the client to be ready.
         /// </summary>
         /// <param name="startTimeout">the maximum time to wait for the client to start, defaults to 3 seconds if not provided</param>
         /// <returns>true if the client is successfully started within the timeout</returns>
