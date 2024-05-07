@@ -51,14 +51,14 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
             {
                 var nextTime = DateTime.Now.Add(_pollingInterval);
 
-                await SafePollAsync();
+                await SafePollAsync().ConfigureAwait(false);
 
                 var timeToWait = nextTime.Subtract(DateTime.Now);
                 if (timeToWait.CompareTo(TimeSpan.Zero) > 0)
                 {
                     try
                     {
-                        await Task.Delay(timeToWait, _canceller.Token);
+                        await Task.Delay(timeToWait, _canceller.Token).ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
                     {
@@ -71,7 +71,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
         {
             try
             {
-                var response = await _getUserFlags.RunAsync(_timestamp);
+                var response = await _getUserFlags.RunAsync(_timestamp).ConfigureAwait(false);
                 if (response.IsFatal)
                 {
                     _logger.LogError(

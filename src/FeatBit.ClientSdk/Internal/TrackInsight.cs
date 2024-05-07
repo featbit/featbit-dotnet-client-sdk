@@ -48,7 +48,7 @@ namespace FeatBit.Sdk.Client.Internal
                 insights[0] = insight;
 
                 var payload = JsonSerializer.SerializeToUtf8Bytes(insights, DefaultSerializerOptions);
-                await PostAsync(string.Empty, payload);
+                await PostAsync(string.Empty, payload).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
