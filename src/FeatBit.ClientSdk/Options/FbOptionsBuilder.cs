@@ -7,8 +7,6 @@ namespace FeatBit.Sdk.Client.Options
 {
     public class FbOptionsBuilder
     {
-        private TimeSpan _startWaitTime;
-
         private readonly string _secret;
         private bool _offline;
         private FeatureFlag[] _bootstrap;
@@ -24,8 +22,6 @@ namespace FeatBit.Sdk.Client.Options
 
         public FbOptionsBuilder(string secret)
         {
-            _startWaitTime = TimeSpan.FromSeconds(5);
-
             _offline = false;
             _bootstrap = Array.Empty<FeatureFlag>();
             _secret = secret;
@@ -41,14 +37,8 @@ namespace FeatBit.Sdk.Client.Options
 
         public FbOptions Build()
         {
-            return new FbOptions(_startWaitTime, _offline, _bootstrap, _secret, _dataSyncMode, _pollingUri,
-                _pollingInterval, _eventUri, _loggerFactory);
-        }
-
-        public FbOptionsBuilder StartWaitTime(TimeSpan startWaitTime)
-        {
-            _startWaitTime = startWaitTime;
-            return this;
+            return new FbOptions(_offline, _bootstrap, _secret, _dataSyncMode, _pollingUri, _pollingInterval, _eventUri,
+                _loggerFactory);
         }
 
         public FbOptionsBuilder Polling(Uri pollingUri, TimeSpan? pollingInterval = null)
