@@ -77,8 +77,7 @@ namespace FeatBit.Sdk.Client
 
             try
             {
-                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout)
-                    .ConfigureAwait(false);
+                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout).ConfigureAwait(false);
                 if (success)
                 {
                     _logger.LogInformation("FbClient successfully started");
