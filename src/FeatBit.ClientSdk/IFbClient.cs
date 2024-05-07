@@ -21,9 +21,19 @@ namespace FeatBit.Sdk.Client
         IFlagTracker FlagTracker { get; }
 
         /// <summary>
+        /// Starts FbClient
+        /// </summary>
+        /// <param name="startTimeout">the maximum time to wait for the client to start, defaults to 3 seconds if not provided</param>
+        /// <returns>true if the client is successfully started within the timeout</returns>
+        Task<bool> StartAsync(TimeSpan? startTimeout = null);
+
+        /// <summary>
         /// Changes the current evaluation user and requests flags for that user.
         /// </summary>
-        Task IdentifyAsync(FbUser user);
+        /// <param name="user">the new user</param>
+        /// <param name="identifyTimeout">the maximum time to wait for the user to be identified, defaults to 3 seconds if not provided</param>
+        /// <returns>true if the user is successfully identified within the timeout</returns>
+        Task<bool> IdentifyAsync(FbUser user, TimeSpan? identifyTimeout = null);
 
         /// <summary>
         /// Get the boolean value of a feature flag for current user.

@@ -8,12 +8,6 @@ namespace FeatBit.Sdk.Client.Options
     public sealed class FbOptions
     {
         /// <summary>
-        /// How long the client constructor will block awaiting a successful connection to FeatBit.
-        /// </summary>
-        /// <value>Defaults to 5 seconds</value>
-        public TimeSpan StartWaitTime { get; set; }
-
-        /// <summary>
         /// Whether or not this client is offline. If true, no calls to FeatBit will be made.
         /// </summary>
         /// <value>Defaults to <c>false</c></value>
@@ -61,7 +55,6 @@ namespace FeatBit.Sdk.Client.Options
         public ILoggerFactory LoggerFactory { get; set; }
 
         internal FbOptions(
-            TimeSpan startWaitTime,
             bool offline,
             FeatureFlag[] bootstrap,
             string secret,
@@ -71,7 +64,6 @@ namespace FeatBit.Sdk.Client.Options
             Uri eventUri,
             ILoggerFactory loggerFactory)
         {
-            StartWaitTime = startWaitTime;
             Offline = offline;
             Bootstrap = bootstrap;
             Secret = secret;

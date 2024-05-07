@@ -125,7 +125,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
         public void Dispose()
         {
             _canceller?.Cancel();
-            _canceller = null;
+            _canceller?.Dispose();
 
             _getUserFlags?.Dispose();
         }

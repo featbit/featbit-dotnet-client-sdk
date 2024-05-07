@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FeatBit.Sdk.Client.ChangeTracker;
+using FeatBit.Sdk.Client.Concurrent;
 using FeatBit.Sdk.Client.DataSynchronizer;
 using FeatBit.Sdk.Client.Evaluation;
 using FeatBit.Sdk.Client.Internal;
@@ -31,19 +32,11 @@ namespace FeatBit.Sdk.Client
         public IFlagTracker FlagTracker => _flagTracker;
 
         /// <summary>
-        /// Creates a new FbClient instance, then starts fetching feature flags workflow.
+        /// Creates a new FbClient instance
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// In offline mode, this constructor will return immediately. Otherwise, it will wait and block on
-        /// the current thread until initialization and the first response from the FeatBit is returned,
-        /// up to the <see cref="FbOptions.StartWaitTime"/> timeout. If the timeout elapses, the returned instance will
-        /// have an <see cref="Initialized"/> property of <see langword="false"/>.
-        /// </para>
-        /// </remarks>
         /// <param name="options">the client options</param>
         /// <param name="initialUser">the initial evaluation user; You specify this user at initialization time,
-        /// and you can change it later with <see cref="IdentifyAsync(FbUser)"/>. All subsequent calls to evaluation
+        /// and you can change it later with <see cref="IdentifyAsync(FbUser, TimeSpan?)"/>. All subsequent calls to evaluation
         /// methods like <see cref="BoolVariation(string, bool)"/> refer to the flag values for the current user.
         /// </param>
         public FbClient(FbOptions options, FbUser initialUser)
@@ -65,50 +58,48 @@ namespace FeatBit.Sdk.Client
                 _trackInsight = new TrackInsight(options);
                 _dataSynchronizer = _options.DataSyncMode switch
                 {
-                    DataSyncMode.Polling => _dataSynchronizer = new PollingDataSynchronizer(_options, _user, _store),
+                    DataSyncMode.Polling => new PollingDataSynchronizer(_options, _user, _store),
                     _ => new NullDataSynchronizer()
                 };
             }
 
             _logger = _options.LoggerFactory.CreateLogger<FbClient>();
-
-            // starts client
-            Start();
         }
 
-        private void Start()
+        /// <inheritdoc/>
+        public async Task<bool> StartAsync(TimeSpan? startTimeout = null)
         {
-            _logger.LogInformation("Starting FbClient...");
-            var task = _dataSynchronizer.StartAsync();
+            var timeout = startTimeout ?? TimeSpan.FromSeconds(3);
+
+            _logger.LogInformation(
+                "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", timeout.TotalMilliseconds
+            );
+
             try
             {
-                var startWaitTime = _options.StartWaitTime.TotalMilliseconds;
-                _logger.LogInformation(
-                    "Waiting up to {StartWaitTime} milliseconds for FbClient to start...", startWaitTime
-                );
-                var success = task.Wait(_options.StartWaitTime);
+                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout);
                 if (success)
                 {
                     _logger.LogInformation("FbClient successfully started");
                 }
-                else
-                {
-                    _logger.LogError(
-                        "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
-                        "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
-                        "Please double-check your EnvSecret and StreamingUri configuration.",
-                        startWaitTime
-                    );
-                }
+
+                return success;
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                // we do not want to throw exceptions from the FbClient constructor, so we'll just swallow this.
-                _logger.LogError(ex, "An exception occurred during FbClient initialization.");
+                _logger.LogError(
+                    "FbClient failed to start successfully within {StartWaitTime} milliseconds. " +
+                    "This error usually indicates a connection issue with FeatBit or an invalid secret. " +
+                    "Please double-check your EnvSecret and StreamingUri configuration.",
+                    timeout
+                );
+
+                return false;
             }
         }
 
-        public async Task IdentifyAsync(FbUser user)
+        /// <inheritdoc/>
+        public async Task<bool> IdentifyAsync(FbUser user, TimeSpan? identifyTimeout = null)
         {
             _user = user;
 
@@ -116,11 +107,20 @@ namespace FeatBit.Sdk.Client
             _dataSynchronizer.Dispose();
             _dataSynchronizer = _options.DataSyncMode switch
             {
-                DataSyncMode.Polling => _dataSynchronizer = new PollingDataSynchronizer(_options, _user, _store),
+                DataSyncMode.Polling => new PollingDataSynchronizer(_options, _user, _store),
                 _ => new NullDataSynchronizer()
             };
 
-            await _dataSynchronizer.StartAsync();
+            try
+            {
+                var timeout = identifyTimeout ?? TimeSpan.FromSeconds(3);
+                var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout);
+                return success;
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
         }
 
         /// <inheritdoc/>

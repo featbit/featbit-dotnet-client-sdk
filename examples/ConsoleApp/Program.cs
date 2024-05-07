@@ -1,4 +1,5 @@
-﻿using FeatBit.Sdk.Client;
+﻿using System.Text.Json;
+using FeatBit.Sdk.Client;
 using FeatBit.Sdk.Client.ChangeTracker;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
@@ -17,6 +18,7 @@ if (string.IsNullOrWhiteSpace(secret))
 var consoleLoggerFactory = LoggerFactory.Create(opt => opt.AddConsole().SetMinimumLevel(LogLevel.Information));
 
 var options = new FbOptionsBuilder(secret)
+    // set polling interval to 10s for testing purpose
     .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(10))
     .Event(new Uri("http://localhost:5100"))
     .LoggerFactory(consoleLoggerFactory)
@@ -28,12 +30,26 @@ var initialUser = FbUser.Builder("tester-id")
     .Build();
 
 var client = new FbClient(options, initialUser);
-if (!client.Initialized)
+
+// Starts the client and wait for 3 seconds to initialize.
+var success = await client.StartAsync(TimeSpan.FromSeconds(3));
+if (!success)
 {
     Console.WriteLine("FbClient failed to initialize. Exiting...");
     Environment.Exit(-1);
 }
 
+// Get all flag values for the initial user.
+var serializerOptions = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    WriteIndented = true
+};
+
+Console.WriteLine($"All flag values for {initialUser.Name}:");
+Console.WriteLine(JsonSerializer.Serialize(client.AllFlags(), serializerOptions));
+
+// Track flag value changes
 Subscriber generalSubscriber = changeEvent =>
 {
     Console.WriteLine(
@@ -56,6 +72,13 @@ Subscriber keyedSubscriber = changeEvent =>
 };
 flagTracker.Subscribe("game-runner", keyedSubscriber);
 
+// Identify user
+Console.WriteLine("After 1s, we will identify a new user 'authorized'...");
+await Task.Delay(1000);
+var authorizedUser = FbUser.Builder("authorized-id").Name("authorized").Build();
+await client.IdentifyAsync(authorizedUser);
+
+// Evaluate flags for current user
 while (true)
 {
     Console.WriteLine("Please input flagKey, for example 'use-new-algorithm'. Input 'exit' to exit.");
