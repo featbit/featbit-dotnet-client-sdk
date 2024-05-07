@@ -62,7 +62,10 @@ var anonymousUser = FbUser.Builder("anonymous")
 
 // Creates a new client instance that connects to FeatBit with the custom option.
 var client = new FbClient(options, anonymousUser);
-if (!client.Initialized)
+
+// Starts the client and wait up to 3 seconds for the client to be ready.
+var success = await client.StartAsync(TimeSpan.FromSeconds(3));
+if (!success)
 {
     Console.WriteLine("FbClient failed to initialize. All Variation calls will use fallback value.");
 }
