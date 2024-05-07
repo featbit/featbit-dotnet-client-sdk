@@ -30,9 +30,7 @@ public static class FeatBit
             _instance = new FbClient(options, initialUser: InitialUser);
 
             // Start the client and wait for 3 seconds to initialize.
-            _instance.StartAsync(TimeSpan.FromSeconds(3))
-                .GetAwaiter()
-                .GetResult();
+            _instance.StartAsync(TimeSpan.FromSeconds(3)).Wait();
 
             return _instance;
         }
