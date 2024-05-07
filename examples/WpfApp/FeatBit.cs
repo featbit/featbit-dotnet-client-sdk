@@ -8,7 +8,7 @@ namespace WpfApp;
 
 public static class FeatBit
 {
-    private static readonly FbUser InitialUser = FbUser.Builder("anonymous").Name("anonymous").Build();
+    private static readonly FbUser InitialUser = FbUser.Builder("anonymous-id").Name("anonymous").Build();
     private static FbClient? _instance = null;
 
     public static FbClient Instance
@@ -20,7 +20,7 @@ public static class FeatBit
                 return _instance;
             }
 
-            var consoleLogger = LoggerFactory.Create(x => x.AddConsole());
+            var consoleLogger = LoggerFactory.Create(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
             var options = new FbOptionsBuilder("JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ")
                 // set the pollingInterval to 5 seconds for testing purposes
                 .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(5))

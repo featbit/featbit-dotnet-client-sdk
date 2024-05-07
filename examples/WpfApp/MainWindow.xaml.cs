@@ -39,7 +39,7 @@ namespace WpfApp
 
         private async void Identify_Click(object sender, RoutedEventArgs e)
         {
-            var newUser = FbUser.Builder("authorized").Name("authorized").Build();
+            var newUser = FbUser.Builder("authorized-id").Name("authorized").Build();
             await _client.IdentifyAsync(newUser);
 
             // show user window
