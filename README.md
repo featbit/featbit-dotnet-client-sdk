@@ -111,6 +111,7 @@ flagTracker.Subscribe(flagKey, @event =>
 ### Examples
 
 - [Console App](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/ConsoleApp)
+- [WPF App](https://github.com/featbit/featbit-dotnet-client-sdk/tree/main/examples/WpfApp)
 
 ## SDK
 
