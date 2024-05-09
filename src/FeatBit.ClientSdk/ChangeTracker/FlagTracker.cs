@@ -10,10 +10,10 @@ namespace FeatBit.Sdk.Client.ChangeTracker
         private readonly IMemoryStore _store;
 
         private readonly object _subscriberLock = new object();
-        private readonly List<Subscriber> _subscribers = new List<Subscriber>();
+        internal readonly List<Subscriber> Subscribers = new List<Subscriber>();
 
         private readonly object _keyedSubscriberLock = new object();
-        private readonly Dictionary<string, List<Subscriber>> _keyedSubscribers =
+        internal readonly Dictionary<string, List<Subscriber>> KeyedSubscribers =
             new Dictionary<string, List<Subscriber>>();
 
         public FlagTracker(IMemoryStore store)
@@ -26,7 +26,10 @@ namespace FeatBit.Sdk.Client.ChangeTracker
         {
             lock (_subscriberLock)
             {
-                _subscribers.Add(subscriber);
+                if (!Subscribers.Contains(subscriber))
+                {
+                    Subscribers.Add(subscriber);
+                }
             }
         }
 
@@ -34,13 +37,16 @@ namespace FeatBit.Sdk.Client.ChangeTracker
         {
             lock (_keyedSubscriberLock)
             {
-                if (!_keyedSubscribers.TryGetValue(key, out var keyedSubscribers))
+                if (!KeyedSubscribers.TryGetValue(key, out var keyedSubscribers))
                 {
                     keyedSubscribers = new List<Subscriber>();
-                    _keyedSubscribers[key] = keyedSubscribers;
+                    KeyedSubscribers[key] = keyedSubscribers;
                 }
 
-                keyedSubscribers.Add(subscriber);
+                if (!keyedSubscribers.Contains(subscriber))
+                {
+                    keyedSubscribers.Add(subscriber);
+                }
             }
         }
 
@@ -48,7 +54,7 @@ namespace FeatBit.Sdk.Client.ChangeTracker
         {
             lock (_subscriberLock)
             {
-                _subscribers.Remove(subscriber);
+                Subscribers.Remove(subscriber);
             }
         }
 
@@ -56,7 +62,7 @@ namespace FeatBit.Sdk.Client.ChangeTracker
         {
             lock (_keyedSubscriberLock)
             {
-                if (_keyedSubscribers.TryGetValue(key, out var keyedSubscribers))
+                if (KeyedSubscribers.TryGetValue(key, out var keyedSubscribers))
                 {
                     keyedSubscribers.Remove(subscriber);
                 }
@@ -65,12 +71,12 @@ namespace FeatBit.Sdk.Client.ChangeTracker
 
         private void HandleFlagValueChangedEvent(object sender, FlagValueChangedEvent theEvent)
         {
-            foreach (var subscriber in _subscribers)
+            foreach (var subscriber in Subscribers)
             {
                 subscriber.Invoke(theEvent);
             }
 
-            if (_keyedSubscribers.TryGetValue(theEvent.Key, out var keyedSubscribers))
+            if (KeyedSubscribers.TryGetValue(theEvent.Key, out var keyedSubscribers))
             {
                 foreach (var subscriber in keyedSubscribers)
                 {
@@ -81,8 +87,8 @@ namespace FeatBit.Sdk.Client.ChangeTracker
 
         public void Dispose()
         {
-            _subscribers.Clear();
-            _keyedSubscribers.Clear();
+            Subscribers.Clear();
+            KeyedSubscribers.Clear();
             _store.FlagValueChanged -= HandleFlagValueChangedEvent;
         }
     }
