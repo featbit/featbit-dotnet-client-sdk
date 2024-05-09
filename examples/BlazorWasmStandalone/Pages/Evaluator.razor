@@ -1,0 +1,31 @@
+﻿@page "/evaluator"
+@using FeatBit.Sdk.Client.Evaluation
+@inject IFbClient FbClient
+
+<PageTitle>Evaluator</PageTitle>
+
+<div class="mx-auto w-75 d-flex flex-column gap-3">
+    <label for="flagKey" class="form-label">Flag Key</label>
+    <input id="flagKey" class="form-control" @bind="_flagKey">
+    <button type="button" class="btn btn-primary" @onclick="Evaluate">Run Evaluation</button>
+
+    @if (_evalDetail != null)
+    {
+        <div class="alert alert-primary" role="alert">
+            <h4 class="alert-heading">Evaluation Result</h4>
+            <p>Value: @_evalDetail.Value</p>
+            <p>Reason: @_evalDetail.Reason</p>
+        </div>
+    }
+</div>
+
+@code {
+
+    private string? _flagKey;
+    private EvalDetail<string>? _evalDetail;
+
+    private void Evaluate()
+    {
+        _evalDetail = FbClient.StringVariationDetail(_flagKey, defaultValue: "the-fallback-value");
+    }
+}

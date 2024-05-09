@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D81B8671-1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp", "examples\WpfApp\WpfApp.csproj", "{00CD5AD9-2F8B-49C2-A630-D84808C4C312}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasmStandalone", "examples\BlazorWasmStandalone\BlazorWasmStandalone.csproj", "{2B82340D-05CC-4363-B22C-61EB29EEF7A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{00CD5AD9-2F8B-49C2-A630-D84808C4C312}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00CD5AD9-2F8B-49C2-A630-D84808C4C312}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00CD5AD9-2F8B-49C2-A630-D84808C4C312}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +47,7 @@ Global
 		{803B65EF-83E0-483A-9DD7-CFA33CE6A804} = {88D7A6F6-FD32-40ED-B760-E935250C1A13}
 		{65445ACE-964D-4C54-A1E9-9356F26BB1E0} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
 		{00CD5AD9-2F8B-49C2-A630-D84808C4C312} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BF0A076D-C755-4C00-8376-E621E4CC9D59}
