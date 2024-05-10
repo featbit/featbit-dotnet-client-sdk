@@ -28,7 +28,11 @@ jobs:
         run: dotnet build src/FeatBit.ClientSdk/FeatBit.ClientSdk.csproj -c Release --no-restore
 
       - name: Run Tests
-        run: dotnet test tests/FeatBit.ClientSdk.Tests/FeatBit.ClientSdk.Tests.csproj -c Release --no-build --verbosity normal
+        run: |
+          dotnet restore tests/FeatBit.ClientSdk.Tests
+          dotnet test -v normal \
+              -c Release --no-build \
+              tests/FeatBit.ClientSdk.Tests/FeatBit.ClientSdk.Tests.csproj
 
       - name: Set Version Variable
         env:
