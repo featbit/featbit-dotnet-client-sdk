@@ -21,14 +21,11 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: Install MAUI Workload
-        run: dotnet workload restore
-
       - name: Restore Packages
-        run: dotnet restore
+        run: dotnet restore src/FeatBit.ClientSdk/FeatBit.ClientSdk.csproj
 
       - name: Build Solution
-        run: dotnet build -c Release --no-restore
+        run: dotnet build src/FeatBit.ClientSdk/FeatBit.ClientSdk.csproj -c Release --no-restore
 
       - name: Run Tests
-        run: dotnet test -c Release --no-build --verbosity normal
+        run: dotnet test tests/FeatBit.ClientSdk.Tests/FeatBit.ClientSdk.Tests.csproj -v normal -c Release
