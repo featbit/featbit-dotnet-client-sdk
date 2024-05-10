@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FBC5D520
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeatBit.ClientSdk.Tests", "tests\FeatBit.ClientSdk.Tests\FeatBit.ClientSdk.Tests.csproj", "{C99E4AE9-33B1-4A4C-855B-4853465B19FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasmStandalone", "examples\BlazorWasmStandalone\BlazorWasmStandalone.csproj", "{2B82340D-05CC-4363-B22C-61EB29EEF7A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{C99E4AE9-33B1-4A4C-855B-4853465B19FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C99E4AE9-33B1-4A4C-855B-4853465B19FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C99E4AE9-33B1-4A4C-855B-4853465B19FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +54,7 @@ Global
 		{65445ACE-964D-4C54-A1E9-9356F26BB1E0} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
 		{00CD5AD9-2F8B-49C2-A630-D84808C4C312} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
 		{C99E4AE9-33B1-4A4C-855B-4853465B19FA} = {FBC5D520-A9E1-485F-83E9-175B6F63FA5B}
+		{2B82340D-05CC-4363-B22C-61EB29EEF7A2} = {CB1CAE3A-9FCC-4601-A676-0A8CF649C761}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BF0A076D-C755-4C00-8376-E621E4CC9D59}

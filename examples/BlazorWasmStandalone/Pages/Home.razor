@@ -1,0 +1,39 @@
+﻿@page "/"
+@inject IFbClient FbClient
+@inject ILogger<Home> Logger
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<p role="status">@_welcomeMessage</p>
+
+@code {
+    private string _welcomeMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        Logger.LogInformation("Home page initialized...");
+
+        var version = FbClient.StringVariation("welcome-message-version", defaultValue: "v0");
+        SetWelcomeMessage(version);
+
+        FbClient.FlagTracker.Subscribe(
+            "welcome-message-version",
+            changedEvent => SetWelcomeMessage(changedEvent.NewValue)
+        );
+    }
+
+    private void SetWelcomeMessage(string version)
+    {
+        Logger.LogInformation("set welcome message for version {version}", version);
+        _welcomeMessage = version switch
+        {
+            "v1" => "Welcome to the v1 version of the app!",
+            "v2" => "Welcome to the v2 version of the app!",
+            _ => "Welcome to your new app."
+        };
+        StateHasChanged();
+    }
+
+}

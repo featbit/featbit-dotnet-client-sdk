@@ -1,0 +1,37 @@
+﻿@page "/counter"
+@inject IFbClient FbClient
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p>Current count: @_currentCount</p>
+
+<button disabled="@(_delta == 0)" class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int _currentCount = 0;
+    private int _delta;
+
+    protected override void OnInitialized()
+    {
+        _delta = FbClient.IntVariation("counter-delta", defaultValue: 0);
+
+        FbClient.FlagTracker.Subscribe("counter-delta", changedEvent =>
+        {
+            if (!int.TryParse(changedEvent.NewValue, out var delta))
+            {
+                return;
+            }
+
+            _delta = delta;
+            StateHasChanged();
+        });
+    }
+
+    private void IncrementCount()
+    {
+        _currentCount += _delta;
+    }
+
+}
