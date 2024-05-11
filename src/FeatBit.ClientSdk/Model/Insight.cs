@@ -14,6 +14,12 @@ namespace FeatBit.Sdk.Client.Model
             Variations = new VariationInsight[1];
             Variations[0] = new VariationInsight(flag);
         }
+
+        public Insight(FbUser user)
+        {
+            User = user.AsEndUser();
+            Variations = Array.Empty<VariationInsight>();
+        }
     }
 
     internal sealed class VariationInsight
