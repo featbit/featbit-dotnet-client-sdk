@@ -115,6 +115,11 @@ namespace FeatBit.Sdk.Client
             {
                 var timeout = identifyTimeout ?? TimeSpan.FromSeconds(3);
                 var success = await _dataSynchronizer.StartAsync().WithTimeout(timeout).ConfigureAwait(false);
+
+                // track user insight
+                var insight = new Insight(_user);
+                _ = Task.Run(() => _trackInsight.RunAsync(insight));
+
                 return success;
             }
             catch (OperationCanceledException)
