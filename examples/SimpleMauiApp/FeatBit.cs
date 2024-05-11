@@ -39,4 +39,10 @@ public static class FeatBit
             return _instance;
         }
     }
+
+    public static async Task LoginAsync(FbUser authorizedUser)
+        => await Instance.IdentifyAsync(authorizedUser);
+
+    public static async Task LogoutAsync(FbUser? anonymousUser = null)
+        => await Instance.IdentifyAsync(anonymousUser ?? InitialUser);
 }

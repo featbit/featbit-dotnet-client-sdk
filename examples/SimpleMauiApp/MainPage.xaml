@@ -30,15 +30,38 @@
                 SemanticProperties.HeadingLevel="Level2"
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
 
-            <Label
-                Text="{Binding DeltaText}"
-                Style="{StaticResource SubHeadline}" />
+            <FlexLayout
+                WidthRequest="300"
+                HorizontalOptions="Center"
+                JustifyContent="SpaceBetween">
+                <Label
+                    VerticalTextAlignment="Center"
+                    Text="{Binding DeltaText}"
+                    Style="{StaticResource SubHeadline}" />
 
-            <Button
-                Text="{Binding CounterText}"
-                SemanticProperties.Hint="Counts the number of times you click"
-                Command="{Binding IncrementCommand}"
-                HorizontalOptions="Fill" />
+                <Button
+                    WidthRequest="150"
+                    Text="{Binding CounterText}"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    Command="{Binding IncrementCommand}" />
+            </FlexLayout>
+
+            <FlexLayout
+                WidthRequest="300"
+                HorizontalOptions="Center"
+                JustifyContent="SpaceBetween">
+                <Label
+                    x:Name="CurrentUserLabel"
+                    VerticalTextAlignment="Center"
+                    Text="anonymous"
+                    Style="{StaticResource SubHeadline}" />
+
+                <Button
+                    x:Name="ToggleLoginButton"
+                    WidthRequest="150"
+                    Text="Login"
+                    Clicked="ToggleLogin" />
+            </FlexLayout>
         </VerticalStackLayout>
     </ScrollView>
 

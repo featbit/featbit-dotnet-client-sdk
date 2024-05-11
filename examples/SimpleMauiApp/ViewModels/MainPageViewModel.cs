@@ -83,7 +83,7 @@ public class MainPageViewModel : INotifyPropertyChanged
 
     private static string GetWelcomeMessage(string version) => $"[{version}] Welcome to .NET Multi-platform App UI";
 
-    private static string GetDeltaText(int delta) => $"Delta: {delta}";
+    private static string GetDeltaText(int delta) => $"delta: {delta}";
 
     private static string GetCounterText(int count) =>
         count switch
