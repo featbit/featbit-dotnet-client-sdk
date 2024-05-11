@@ -30,6 +30,7 @@ namespace FeatBit.Sdk.Client
         /// <summary>
         /// Changes the current evaluation user and requests flags for that user.
         /// </summary>
+        /// <remarks>This method also sends a user insight message to FeatBit.</remarks>
         /// <param name="user">the new user</param>
         /// <param name="identifyTimeout">the maximum time to wait for the user to be identified, defaults to 3 seconds if not provided</param>
         /// <returns>true if the user is successfully identified within the timeout</returns>
