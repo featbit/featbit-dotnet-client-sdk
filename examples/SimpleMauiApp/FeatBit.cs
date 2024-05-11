@@ -24,8 +24,10 @@ public static class FeatBit
                 // check the documentation at
                 // https://learn.microsoft.com/en-us/dotnet/maui/data-cloud/local-web-services?view=net-maui-8.0
                 .Polling(new Uri("http://10.0.2.2:5100"), TimeSpan.FromSeconds(5))
+                .Event(new Uri("http://10.0.2.2:5100"))
 #else
                 .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(5))
+                .Event(new Uri("http://localhost:5100"))
 #endif
                 .Build();
 
