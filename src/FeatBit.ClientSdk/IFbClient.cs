@@ -28,7 +28,7 @@ namespace FeatBit.Sdk.Client
         Task<bool> StartAsync(TimeSpan? startTimeout = null);
 
         /// <summary>
-        /// Changes the current evaluation user and requests flags for that user.
+        /// Changes the current evaluation user, requests flags for that user and sends a user insight message to tell FeatBit about the user.
         /// </summary>
         /// <param name="user">the new user</param>
         /// <param name="identifyTimeout">the maximum time to wait for the user to be identified, defaults to 3 seconds if not provided</param>
@@ -90,7 +90,6 @@ namespace FeatBit.Sdk.Client
         /// <returns>an <see cref="EvalDetail{T}"/> object</returns>
         /// <seealso cref="IntVariation(string, int)"/>
         EvalDetail<int> IntVariationDetail(string key, int defaultValue = 0);
-
 
         /// <summary>
         /// Get the float value of a feature flag for current user.
