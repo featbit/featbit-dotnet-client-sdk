@@ -25,6 +25,7 @@ async Task AddFeatBitAsync()
     var options = new FbOptionsBuilder("JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ")
         // set the pollingInterval to 5 seconds for testing purposes
         .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(5))
+        .Event(new Uri("http://localhost:5100"))
         .Build();
 
     var fbClient = new FbClient(options, initialUser: initialUser);

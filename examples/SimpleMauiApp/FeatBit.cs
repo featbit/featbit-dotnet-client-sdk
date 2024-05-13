@@ -1,10 +1,8 @@
-﻿using System;
-using FeatBit.Sdk.Client;
+﻿using FeatBit.Sdk.Client;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
-using Microsoft.Extensions.Logging;
 
-namespace WpfApp;
+namespace SimpleMauiApp;
 
 public static class FeatBit
 {
@@ -20,12 +18,17 @@ public static class FeatBit
                 return _instance;
             }
 
-            var consoleLogger = LoggerFactory.Create(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
             var options = new FbOptionsBuilder("JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ")
                 // set the pollingInterval to 5 seconds for testing purposes
+#if ANDROID
+                // check the documentation at
+                // https://learn.microsoft.com/en-us/dotnet/maui/data-cloud/local-web-services?view=net-maui-8.0
+                .Polling(new Uri("http://10.0.2.2:5100"), TimeSpan.FromSeconds(5))
+                .Event(new Uri("http://10.0.2.2:5100"))
+#else
                 .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(5))
                 .Event(new Uri("http://localhost:5100"))
-                .LoggerFactory(consoleLogger)
+#endif
                 .Build();
 
             _instance = new FbClient(options, initialUser: InitialUser);
@@ -36,4 +39,10 @@ public static class FeatBit
             return _instance;
         }
     }
+
+    public static async Task LoginAsync(FbUser authorizedUser)
+        => await Instance.IdentifyAsync(authorizedUser);
+
+    public static async Task LogoutAsync(FbUser? anonymousUser = null)
+        => await Instance.IdentifyAsync(anonymousUser ?? InitialUser);
 }
