@@ -34,6 +34,9 @@ Follow the documentation below to retrieve these values
 - [How to get the environment secret](https://docs.featbit.co/sdk/faq#how-to-get-the-environment-secret)
 - [How to get the SDK URLs](https://docs.featbit.co/sdk/faq#how-to-get-the-sdk-urls)
 
+> [!NOTE]
+> The polling URL is usually the same as the the streaming URL, both of them points to the evaluation server's address.
+
 ### Quick Start
 
 The following code demonstrates some basic usages of FeatBit.ClientSdk including:
