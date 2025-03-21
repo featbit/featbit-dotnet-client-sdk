@@ -133,8 +133,7 @@ date in custom scenarios.
 
 ### FbClient
 
-The FbClient is the heart of the SDK which providing access to FeatBit server. Applications should instantiate a single
-instance for the lifetime of the application.
+The FbClient is the heart of the SDK which providing access to FeatBit server. Applications should instantiate a **single instance** for the lifetime of the application.
 
 #### FbClient Using Custom Options
 
