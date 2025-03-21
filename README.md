@@ -35,7 +35,12 @@ Follow the documentation below to retrieve these values
 - [How to get the SDK URLs](https://docs.featbit.co/sdk/faq#how-to-get-the-sdk-urls)
 
 > [!NOTE]
-> The polling URL is usually the same as the the streaming URL, both of them points to the evaluation server's address.
+> The polling URL is derived from the streaming URL by replacing the protocol:
+>
+> * Streaming URL: `ws://<evaluation-server-address>` or `wss://<evaluation-server-address>`
+> * Polling URL: `http://<evaluation-server-address>` or `https://<evaluation-server-address>`
+>
+> Both URLs resolve to the same evaluation server endpoint.
 
 ### Quick Start
 
@@ -53,8 +58,8 @@ using FeatBit.Sdk.Client.Options;
 
 // setup SDK options
 var options = new FbOptionsBuilder("<replace-with-your-env-secret>")
-    .Polling(new Uri("<replace-with-your-polling-url>"), TimeSpan.FromMinutes(5))
-    .Event(new Uri("<replace-with-your-event-url>"))
+    .Polling(new Uri("https://app-eval.featbit.co"), TimeSpan.FromMinutes(5))
+    .Event(new Uri("https://app-eval.featbit.co"))
     .Build();
 
 // use the anonymous user as the initial user
@@ -143,8 +148,8 @@ using Microsoft.Extensions.Logging;
 var consoleLoggerFactory = LoggerFactory.Create(opt => opt.AddConsole());
 
 var options = new FbOptionsBuilder(secret)
-    .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(10))
-    .Event(new Uri("http://localhost:5100"))
+    .Polling(new Uri("https://app-eval.featbit.co"), TimeSpan.FromSeconds(10))
+    .Event(new Uri("https://app-eval.featbit.co"))
     .StartWaitTime(TimeSpan.FromSeconds(3))
     .LoggerFactory(consoleLoggerFactory)
     .Build();
