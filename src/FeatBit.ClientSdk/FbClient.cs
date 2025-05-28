@@ -10,6 +10,7 @@ using FeatBit.Sdk.Client.Internal;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
 using FeatBit.Sdk.Client.Store;
+using FeatBit.Sdk.Client.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace FeatBit.Sdk.Client
@@ -118,7 +119,7 @@ namespace FeatBit.Sdk.Client
 
                 // track user insight
                 var insight = new Insight(_user);
-                _ = Task.Run(() => _trackInsight.RunAsync(insight));
+                _trackInsight.RunAsync(insight).Ignore();
 
                 return success;
             }

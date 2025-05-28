@@ -6,6 +6,7 @@ using FeatBit.Sdk.Client.Internal;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
 using FeatBit.Sdk.Client.Store;
+using FeatBit.Sdk.Client.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace FeatBit.Sdk.Client.DataSynchronizer
@@ -39,7 +40,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
 
         public Task<bool> StartAsync()
         {
-            _ = StartPollingAsync();
+            StartPollingAsync().Ignore();
 
             return _startTask.Task;
         }
@@ -125,8 +126,6 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
         public void Dispose()
         {
             _canceller?.Cancel();
-            _canceller?.Dispose();
-
             _getUserFlags?.Dispose();
         }
     }
