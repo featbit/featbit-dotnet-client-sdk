@@ -11,6 +11,13 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+const string secret = "";
+if (string.IsNullOrWhiteSpace(secret))
+{
+    Console.WriteLine("Please edit Program.cs to set secret to your FeatBit SDK secret first. Exiting...");
+    Environment.Exit(1);
+}
+
 // inject FbClient
 await AddFeatBitAsync();
 
@@ -22,7 +29,7 @@ async Task AddFeatBitAsync()
 {
     var initialUser = FbUser.Builder("anonymous-id").Name("anonymous").Build();
 
-    var options = new FbOptionsBuilder("JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ")
+    var options = new FbOptionsBuilder(secret)
         // set the pollingInterval to 5 seconds for testing purposes
         .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(5))
         .Event(new Uri("http://localhost:5100"))

@@ -6,8 +6,9 @@ namespace SimpleMauiApp;
 
 public static class FeatBit
 {
+    private const string Secret = "";
     private static readonly FbUser InitialUser = FbUser.Builder("anonymous-id").Name("anonymous").Build();
-    private static FbClient? _instance = null;
+    private static FbClient? _instance;
 
     public static FbClient Instance
     {
@@ -18,7 +19,12 @@ public static class FeatBit
                 return _instance;
             }
 
-            var options = new FbOptionsBuilder("JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ")
+            if (string.IsNullOrWhiteSpace(Secret))
+            {
+                throw new InvalidOperationException("Please set the FeatBit secret key.");
+            }
+
+            var options = new FbOptionsBuilder(Secret)
                 // set the pollingInterval to 5 seconds for testing purposes
 #if ANDROID
                 // check the documentation at
