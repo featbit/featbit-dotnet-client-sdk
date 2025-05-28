@@ -64,8 +64,16 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
                     catch (TaskCanceledException)
                     {
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "An unexpected error occurred while waiting for the next polling interval.");
+                    }
                 }
             }
+
+            // dispose the cancellable token source when polling is stopped
+            _canceller.Dispose();
+            _canceller = null;
         }
 
         private async Task SafePollAsync()
