@@ -40,7 +40,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
 
         public Task<bool> StartAsync()
         {
-            StartPollingAsync().Ignore();
+            StartPollingAsync().Forget();
 
             return _startTask.Task;
         }

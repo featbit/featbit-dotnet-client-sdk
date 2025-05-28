@@ -119,7 +119,7 @@ namespace FeatBit.Sdk.Client
 
                 // track user insight
                 var insight = new Insight(_user);
-                _trackInsight.RunAsync(insight).Ignore();
+                _trackInsight.RunAsync(insight).Forget();
 
                 return success;
             }
@@ -196,7 +196,7 @@ namespace FeatBit.Sdk.Client
             }
 
             var insight = new Insight(_user, featureFlag);
-            _trackInsight.RunAsync(insight).Ignore();
+            _trackInsight.RunAsync(insight).Forget();
 
             return converter(evalResult.Value, out var typedValue)
                 ? new EvalDetail<TValue>(evalResult.Reason, typedValue)

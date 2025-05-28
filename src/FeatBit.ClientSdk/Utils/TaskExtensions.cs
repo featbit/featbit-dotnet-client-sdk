@@ -1,33 +1,41 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace FeatBit.Sdk.Client.Utils
 {
-    internal static class TaskExtensions
+    /// <summary>
+    /// Adds <see cref="Forget(Task)"/> to safely ignore the result of a task execution.
+    /// </summary>
+    public static class TaskExtensions
     {
-        private static readonly Action<Task> IgnoreTaskContinuation = t => { _ = t.Exception; };
-
         /// <summary>
-        /// Observes and ignores a potential exception on a given Task.
-        /// If a Task fails and throws an exception which is never observed, it will be caught by the .NET finalizer thread.
-        /// This function awaits the given task and if the exception is thrown, it observes this exception and simply ignores it.
-        /// This will prevent the escalation of this exception to the .NET finalizer thread.
+        /// Observes the task to avoid the UnobservedTaskException event to be raised.
         /// </summary>
-        /// <param name="task">The task to be ignored.</param>
-        public static void Ignore(this Task task)
+        public static void Forget(this Task task)
         {
-            if (task.IsCompleted)
+            if (!task.IsCompleted || task.IsFaulted)
             {
-                _ = task.Exception;
+                _ = ForgetAwaited(task);
             }
-            else
+
+            return;
+
+            // Allocate the async/await state machine only when needed for performance reasons.
+            // More info about the state machine: https://blogs.msdn.microsoft.com/seteplia/2017/11/30/dissecting-the-async-methods-in-c/?WT.mc_id=DT-MVP-5003978
+            static async Task ForgetAwaited(Task task)
             {
-                task.ContinueWith(
-                    IgnoreTaskContinuation,
-                    CancellationToken.None,
-                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
-                    TaskScheduler.Default);
+#if NET8_0_OR_GREATER
+                await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+#else
+                try
+                {
+                    // No need to resume on the original SynchronizationContext, so use ConfigureAwait(false)
+                    await task.ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Nothing to do here
+                }
+#endif
             }
         }
     }
