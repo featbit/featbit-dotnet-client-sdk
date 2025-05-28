@@ -75,7 +75,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
                 }
             }
 
-            // dispose the cancellable token source when polling is stopped
+            // dispose the cancellation token source when polling is stopped
             _canceller.Dispose();
             _canceller = null;
         }
