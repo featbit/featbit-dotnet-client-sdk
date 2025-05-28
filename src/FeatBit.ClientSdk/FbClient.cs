@@ -196,7 +196,7 @@ namespace FeatBit.Sdk.Client
             }
 
             var insight = new Insight(_user, featureFlag);
-            _ = Task.Run(() => _trackInsight.RunAsync(insight));
+            _trackInsight.RunAsync(insight).Ignore();
 
             return converter(evalResult.Value, out var typedValue)
                 ? new EvalDetail<TValue>(evalResult.Reason, typedValue)
