@@ -39,7 +39,7 @@ if (!success)
     Environment.Exit(-1);
 }
 
-Console.WriteLine("Current user is '{initialUser.Name}'");
+Console.WriteLine($"Current user is '{initialUser.Name}'");
 
 // Get all flag values for the initial user.
 var serializerOptions = new JsonSerializerOptions
