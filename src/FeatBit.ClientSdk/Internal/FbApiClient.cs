@@ -88,7 +88,7 @@ namespace FeatBit.Sdk.Client.Internal
             var client = new HttpClient(handler, false);
             client.BaseAddress = BaseAddressGetter(options);
             client.DefaultRequestHeaders.Add("Authorization", options.Secret);
-            client.DefaultRequestHeaders.Add("User-Agent", "fb-dotnet-client-sdk");
+            client.DefaultRequestHeaders.Add("User-Agent", HttpConstants.UserAgent);
             return client;
         }
 

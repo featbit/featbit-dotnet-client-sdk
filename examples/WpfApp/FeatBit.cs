@@ -8,8 +8,9 @@ namespace WpfApp;
 
 public static class FeatBit
 {
+    private const string Secret = "";
     private static readonly FbUser InitialUser = FbUser.Builder("anonymous-id").Name("anonymous").Build();
-    private static FbClient? _instance = null;
+    private static FbClient? _instance;
 
     public static FbClient Instance
     {
@@ -20,8 +21,13 @@ public static class FeatBit
                 return _instance;
             }
 
+            if (string.IsNullOrWhiteSpace(Secret))
+            {
+                throw new InvalidOperationException("Please set the FeatBit secret key.");
+            }
+
             var consoleLogger = LoggerFactory.Create(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
-            var options = new FbOptionsBuilder("JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ")
+            var options = new FbOptionsBuilder(Secret)
                 // set the pollingInterval to 5 seconds for testing purposes
                 .Polling(new Uri("http://localhost:5100"), TimeSpan.FromSeconds(5))
                 .Event(new Uri("http://localhost:5100"))

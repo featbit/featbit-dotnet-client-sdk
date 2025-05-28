@@ -6,7 +6,7 @@ using FeatBit.Sdk.Client.Options;
 using Microsoft.Extensions.Logging;
 
 // Set secret to your FeatBit SDK secret.
-const string secret = "JbmetT2IvU2CJTxObJLbiQ1XEjhWE6kEaf1IbJu7gTNQ";
+const string secret = "";
 if (string.IsNullOrWhiteSpace(secret))
 {
     Console.WriteLine("Please edit Program.cs to set secret to your FeatBit SDK secret first. Exiting...");
@@ -38,6 +38,8 @@ if (!success)
     Console.WriteLine("FbClient failed to initialize. Exiting...");
     Environment.Exit(-1);
 }
+
+Console.WriteLine($"Current user is '{initialUser.Name}'");
 
 // Get all flag values for the initial user.
 var serializerOptions = new JsonSerializerOptions
@@ -75,25 +77,19 @@ flagTracker.Subscribe("game-runner", keyedSubscriber);
 // Identify user
 Console.WriteLine("After 1s, we will identify a new user 'authorized'...");
 await Task.Delay(1000);
+
 var authorizedUser = FbUser.Builder("authorized-id").Name("authorized").Build();
 await client.IdentifyAsync(authorizedUser);
+Console.WriteLine($"Current user changed to '{authorizedUser.Name}'");
 
 // Evaluate flags for current user
-while (true)
-{
-    Console.WriteLine("Please input flagKey, for example 'use-new-algorithm'. Input 'exit' to exit.");
+Console.WriteLine("Please input flagKey, for example 'use-new-algorithm'.");
 
-    var flagKey = Console.ReadLine();
-    if (flagKey == "exit")
-    {
-        Console.WriteLine("Exiting, please wait...");
-        break;
-    }
+var flagKey = Console.ReadLine();
+var detail = client.StringVariationDetail(flagKey, "fallback");
 
-    var detail = client.StringVariationDetail(flagKey, "fallback");
-    Console.WriteLine("Value for flag '{0}' is '{1}', reason: {2}", flagKey, detail.Value, detail.Reason);
-    Console.WriteLine();
-}
+Console.WriteLine("Value for flag '{0}' is '{1}', reason: {2}", flagKey, detail.Value, detail.Reason);
 
 // delay 1s to ensure that all events has been sent
 await Task.Delay(1000);
+client.Dispose();

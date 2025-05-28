@@ -6,6 +6,7 @@ using FeatBit.Sdk.Client.Internal;
 using FeatBit.Sdk.Client.Model;
 using FeatBit.Sdk.Client.Options;
 using FeatBit.Sdk.Client.Store;
+using FeatBit.Sdk.Client.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace FeatBit.Sdk.Client.DataSynchronizer
@@ -17,6 +18,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
 
         private readonly TimeSpan _pollingInterval;
         private readonly IGetUserFlags _getUserFlags;
+        private readonly string _userKey;
         private readonly IMemoryStore _store;
         private readonly ILogger<PollingDataSynchronizer> _logger;
 
@@ -30,6 +32,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
             _startTask = new TaskCompletionSource<bool>();
             _pollingInterval = options.PollingInterval;
 
+            _userKey = user.Key;
             _store = store;
             _timestamp = 0;
             _getUserFlags = new GetUserFlags(options, user);
@@ -39,7 +42,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
 
         public Task<bool> StartAsync()
         {
-            _ = StartPollingAsync();
+            StartPollingAsync().Forget();
 
             return _startTask.Task;
         }
@@ -49,22 +52,32 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
             _canceller = new CancellationTokenSource();
             while (!_canceller.IsCancellationRequested)
             {
-                var nextTime = DateTime.Now.Add(_pollingInterval);
-
                 await SafePollAsync().ConfigureAwait(false);
 
-                var timeToWait = nextTime.Subtract(DateTime.Now);
-                if (timeToWait.CompareTo(TimeSpan.Zero) > 0)
+                try
                 {
-                    try
+                    if (_logger.IsEnabled(LogLevel.Debug))
                     {
-                        await Task.Delay(timeToWait, _canceller.Token).ConfigureAwait(false);
+                        _logger.LogDebug(
+                            "Waiting for the next polling interval of {PollingInterval}s.",
+                            _pollingInterval.TotalSeconds
+                        );
                     }
-                    catch (TaskCanceledException)
-                    {
-                    }
+
+                    await Task.Delay(_pollingInterval, _canceller.Token).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An unexpected error occurred while waiting for the next polling interval.");
                 }
             }
+
+            // dispose the cancellation token source when polling is stopped
+            _canceller.Dispose();
+            _canceller = null;
         }
 
         private async Task SafePollAsync()
@@ -113,7 +126,7 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
                 if (_initialized.CompareAndSet(false, true))
                 {
                     _startTask.SetResult(true);
-                    _logger.LogInformation("Initialized polling data synchronizer.");
+                    _logger.LogInformation("Polling data synchronizer initialized for user {UserId}.", _userKey);
                 }
             }
             catch (Exception ex)
@@ -125,8 +138,6 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
         public void Dispose()
         {
             _canceller?.Cancel();
-            _canceller?.Dispose();
-
             _getUserFlags?.Dispose();
         }
     }
