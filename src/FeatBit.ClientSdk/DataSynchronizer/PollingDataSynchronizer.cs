@@ -56,6 +56,14 @@ namespace FeatBit.Sdk.Client.DataSynchronizer
 
                 try
                 {
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug(
+                            "Waiting for the next polling interval of {PollingInterval}s.",
+                            _pollingInterval.TotalSeconds
+                        );
+                    }
+
                     await Task.Delay(_pollingInterval, _canceller.Token).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
