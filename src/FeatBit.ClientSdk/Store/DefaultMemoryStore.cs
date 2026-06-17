@@ -8,6 +8,8 @@ namespace FeatBit.Sdk.Client.Store
 {
     public class DefaultMemoryStore : IMemoryStore
     {
+        private const string FlagArchivedReason = "flag archived";
+
         private readonly ConcurrentDictionary<string, FeatureFlag> _items;
 
         public DefaultMemoryStore(IEnumerable<FeatureFlag> bootstrap)
@@ -21,14 +23,14 @@ namespace FeatBit.Sdk.Client.Store
             if (_items.TryGetValue(key, out var flag))
             {
                 // archived flag is treated as not found
-                return flag.MatchReason == "flag archived" ? null : flag;
+                return flag.MatchReason == FlagArchivedReason ? null : flag;
             }
 
             return null;
         }
 
         public ICollection<FeatureFlag> GetAll() => _items.Values
-            .Where(flag => flag.MatchReason != "flag archived")
+            .Where(flag => flag.MatchReason != FlagArchivedReason)
             .ToArray();
 
         public void Upsert(FeatureFlag flag)
