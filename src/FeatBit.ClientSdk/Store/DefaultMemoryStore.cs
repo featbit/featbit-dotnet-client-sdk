@@ -18,7 +18,13 @@ namespace FeatBit.Sdk.Client.Store
 
         public FeatureFlag Get(string key)
         {
-            return _items.TryGetValue(key, out var flag) ? flag : null;
+            if (_items.TryGetValue(key, out var flag))
+            {
+                // archived flag is treated as not found
+                return flag.MatchReason == "flag archived" ? null : flag;
+            }
+
+            return null;
         }
 
         public ICollection<FeatureFlag> GetAll() => _items.Values;
