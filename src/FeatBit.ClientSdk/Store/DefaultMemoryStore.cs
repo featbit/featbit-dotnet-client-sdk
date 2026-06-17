@@ -28,7 +28,7 @@ namespace FeatBit.Sdk.Client.Store
         }
 
         public ICollection<FeatureFlag> GetAll() => _items.Values
-            .Where(f => f.MatchReason != "flag archived")
+            .Where(flag => flag.MatchReason != "flag archived")
             .ToArray();
 
         public void Upsert(FeatureFlag flag)
